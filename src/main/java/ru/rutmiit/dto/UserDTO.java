@@ -5,19 +5,17 @@ import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 public class UserDTO {
-
     private String name;
     private String email;
     private String password;
-    private String role;
-    private String confirmPassword;
 
-    public UserDTO(String name, String email, String password, String role, String confirmPassword) {
+    public UserDTO(String name, String email, String password) {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.role = role;
-        this.confirmPassword = confirmPassword;
+    }
+
+    protected UserDTO() {
     }
 
     @NotNull
@@ -53,22 +51,12 @@ public class UserDTO {
         this.password = password;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    @NotNull
-    @NotEmpty
-    @Length(min = 6, message = "Ошибка: введите минимум 6 символов")
-    public String getConfirmPassword() {
-        return confirmPassword;
-    }
-
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
+    @Override
+    public String toString() {
+        return "UserDTO{" +
+                "name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                '}';
     }
 }
