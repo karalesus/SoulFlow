@@ -30,11 +30,13 @@ public abstract class BaseRepository<Entity, UUID> {
     }
 
     public List<Entity> findAll() {
-        return entityManager.createQuery("from " + entityClass.getName(), entityClass).getResultList();
+        return entityManager.createQuery("FROM " + entityClass.getName(), entityClass).getResultList();
     }
 
     public Optional<Entity> findByName(String name) {
-        return Optional.ofNullable(entityManager.find(entityClass, name));
+        return Optional.ofNullable(entityManager.createQuery("SELECT e FROM " + entityClass.getName() + " e WHERE e.name = :name", entityClass)
+                .setParameter("name", name)
+                .getSingleResult());
     }
 
     @Transactional
