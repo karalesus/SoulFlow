@@ -8,5 +8,4 @@ import java.util.UUID;
 
 public interface UserRepository {
 
-    List<SessionRegistration> getSessionRegistrationsByMember(UUID memberId);
 }

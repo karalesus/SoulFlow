@@ -14,17 +14,8 @@ import java.util.UUID;
 @Repository
 public class UserRepositoryImpl extends BaseRepository<User, UUID> implements UserRepository {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     public UserRepositoryImpl() {
         super(User.class);
     }
 
-    @Override
-    public List<SessionRegistration> getSessionRegistrationsByMember(UUID memberId) {
-        return entityManager.createQuery("SELECT sr FROM SessionRegistration sr JOIN FETCH sr.id.session s WHERE sr.id.member = :memberId", SessionRegistration.class)
-                .setParameter("memberId", memberId)
-                .getResultList();
-    }
 }
