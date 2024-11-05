@@ -11,14 +11,13 @@ public class Instructor extends BaseEntity {
 
     private String name;
     private String certificate;
-    private BigDecimal rating; // ограничение 1..5. Вероятно убрать
+//    private BigDecimal rating; // ограничение 1..5. Вероятно убрать
     private String photoUrl;
     private List<Session> sessionList;
 
-    public Instructor(String name, String certificate, BigDecimal rating, String photoUrl) {
+    public Instructor(String name, String certificate, String photoUrl) {
         this.name = name;
         this.certificate = certificate;
-        this.rating = rating;
         this.photoUrl = photoUrl;
     }
 
@@ -42,14 +41,14 @@ public class Instructor extends BaseEntity {
         this.certificate = certificate;
     }
 
-    @Column(name = "rating", precision = 3, scale = 2, nullable = false)
-    public BigDecimal getRating() {
-        return rating;
-    }
-
-    public void setRating(BigDecimal rating) {
-        this.rating = rating;
-    }
+//    @Column(name = "rating", precision = 3, scale = 2, nullable = false)
+//    public BigDecimal getRating() {
+//        return rating;
+//    }
+//
+//    public void setRating(BigDecimal rating) {
+//        this.rating = rating;
+//    }
 
     @Column(name = "photo_url", length = 512)
     public String getPhotoUrl() {
