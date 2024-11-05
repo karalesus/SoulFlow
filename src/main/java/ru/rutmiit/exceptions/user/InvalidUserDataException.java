@@ -1,4 +1,4 @@
-package ru.rutmiit.exceptions;
+package ru.rutmiit.exceptions.user;
 
 public class InvalidUserDataException extends RuntimeException{
 
