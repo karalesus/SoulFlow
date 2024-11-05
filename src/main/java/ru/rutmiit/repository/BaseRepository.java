@@ -34,9 +34,19 @@ public abstract class BaseRepository<Entity, UUID> {
     }
 
     public Optional<Entity> findByName(String name) {
-        return Optional.ofNullable(entityManager.createQuery("SELECT e FROM " + entityClass.getName() + " e WHERE e.name = :name", entityClass)
+        List<Entity> result = entityManager.createQuery("SELECT e FROM " + entityClass.getName() + " e WHERE e.name = :name", entityClass)
                 .setParameter("name", name)
-                .getSingleResult());
+                .getResultList();
+
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
+    }
+
+    public boolean existsByName(String name) {
+        String query = "SELECT COUNT(e) FROM " + entityClass.getName() + " e WHERE e.name = :name";
+        Long count = entityManager.createQuery(query, Long.class)
+                .setParameter("name", name)
+                .getSingleResult();
+        return count > 0;
     }
 
     @Transactional
