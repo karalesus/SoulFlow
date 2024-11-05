@@ -20,7 +20,7 @@ public class UserDTO {
 
     @NotNull
     @NotEmpty
-    @Length(min = 2, message = "Ошибка: введите минимум 2 символа")
+    @Length(min = 2, message = "Ошибка: имя должно состоять из минимум 2 символов")
     public String getName() {
         return name;
     }
@@ -31,7 +31,7 @@ public class UserDTO {
 
     @NotNull
     @NotEmpty
-    @Length(min = 6, message = "Ошибка: введите минимум 6 символов")
+    @Length(min = 6, message = "Ошибка: email должен состоять из минимум 6 символов")
     public String getEmail() {
         return email;
     }
@@ -42,7 +42,7 @@ public class UserDTO {
 
     @NotNull
     @NotEmpty
-    @Length(min = 6, message = "Ошибка: введите минимум 6 символов")
+    @Length(min = 6, message = "Ошибка: пароль должен состоять из минимум 6 символов")
     public String getPassword() {
         return password;
     }
