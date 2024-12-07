@@ -1,17 +1,18 @@
 package ru.rutmiit.service.implementations;
 
 import jakarta.validation.ConstraintViolation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutmiit.domain.Role;
-import ru.rutmiit.domain.User;
+import ru.rutmiit.dto.EditUserDTO;
+import ru.rutmiit.models.Role;
+import ru.rutmiit.models.User;
 import ru.rutmiit.dto.UserDTO;
 import ru.rutmiit.exceptions.session.InvalidSessionDataException;
 import ru.rutmiit.exceptions.user.InvalidEmailException;
 import ru.rutmiit.exceptions.user.InvalidUserDataException;
 import ru.rutmiit.exceptions.user.UserNotFoundException;
-import ru.rutmiit.repository.implementations.RoleRepositoryImpl;
-import ru.rutmiit.repository.implementations.UserRepositoryImpl;
+import ru.rutmiit.repositories.implementations.RoleRepositoryImpl;
+import ru.rutmiit.repositories.implementations.UserRepositoryImpl;
 import ru.rutmiit.service.UserService;
 import ru.rutmiit.utils.modelMapper.Mapper;
 import ru.rutmiit.utils.validation.ValidationUtil;
@@ -24,20 +25,29 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private ValidationUtil validationUtil;
     private final Mapper mapper;
     private RoleRepositoryImpl roleRepository;
     private UserRepositoryImpl userRepository;
-    private ValidationUtil validationUtil;
 
-    public UserServiceImpl(Mapper mapper, RoleRepositoryImpl roleRepository, UserRepositoryImpl userRepository, ValidationUtil validationUtil) {
+    @Autowired
+    public UserServiceImpl(Mapper mapper, ValidationUtil validationUtil) {
         this.mapper = mapper;
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
         this.validationUtil = validationUtil;
     }
 
+    @Autowired
+    public void setRoleRepository(RoleRepositoryImpl roleRepository) {
+        this.roleRepository = roleRepository;
+    }
+
+    @Autowired
+    public void setUserRepository(UserRepositoryImpl userRepository) {
+        this.userRepository = userRepository;
+    }
+
     @Override
-    public void register(UserDTO userDTO) {
+    public String register(UserDTO userDTO) {
         if (!this.validationUtil.isValid(userDTO)) {
 
             this.validationUtil
@@ -45,8 +55,9 @@ public class UserServiceImpl implements UserService {
                     .stream()
                     .map(ConstraintViolation::getMessage)
                     .forEach(System.out::println);
-            throw new InvalidUserDataException("Данные пользователя введены неверно!");
+            throw new InvalidSessionDataException("Некорректные данные пользователя при регистрации");
         }
+
         boolean existsByEmail = userRepository.existsByEmail(userDTO.getEmail());
 
         if (existsByEmail) {
@@ -58,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
         User user = mapper.convertUserDtoToUser(userDTO);
         user.setRole(List.of(userRole));
-        userRepository.save(user);
+        return userRepository.save(user).getId().toString();
     }
 
     @Override
@@ -72,24 +83,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
-    public UserDTO editUser(UserDTO userDTO) {
-        if (!this.validationUtil.isValid(userDTO)) {
-
-            this.validationUtil
-                    .violations(userDTO)
-                    .stream()
-                    .map(ConstraintViolation::getMessage)
-                    .forEach(System.out::println);
-            throw new InvalidSessionDataException("Данные пользователя введены неверно!");
-        }
-        User user = userRepository.findByEmail(userDTO.getEmail()).orElseThrow(() ->
-                new InvalidEmailException("Пользователь с email " + userDTO.getEmail() + " не найден.")
+    public EditUserDTO editUser(EditUserDTO userDTO) {
+        validateUser(userDTO, "Некорректные данные пользователя при редактировании");
+        User user = userRepository.findById(UUID.fromString(userDTO.getId())).orElseThrow(() ->
+                new InvalidEmailException("Пользователь с sessionId " + userDTO.getId() + " не найден.")
         );
 
+//        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+//            throw new
+//        }
         user.setName(userDTO.getName());
-        this.userRepository.update(user);
-        return mapper.convertUserToUserDto(user);
+        user.setEmail(userDTO.getEmail());
+
+//        if (!newPassword.isBlank()) {
+//            user.setPassword(passwordEncoder.encode(newPassword));
+//        }
+        this.userRepository.save(user);
+        return mapper.convertEditUserToUserDto(user);
     }
 
     @Override
@@ -102,5 +112,17 @@ public class UserServiceImpl implements UserService {
                 .findById(uuid)
                 .map(mapper::convertUserToUserDto)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+    }
+
+    private void validateUser(EditUserDTO userDTO, String exceptionMessage) {
+        if (!this.validationUtil.isValid(userDTO)) {
+
+            this.validationUtil
+                    .violations(userDTO)
+                    .stream()
+                    .map(ConstraintViolation::getMessage)
+                    .forEach(System.out::println);
+            throw new InvalidSessionDataException(exceptionMessage);
+        }
     }
 }

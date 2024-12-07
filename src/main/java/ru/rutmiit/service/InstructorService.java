@@ -1,18 +1,26 @@
 package ru.rutmiit.service;
 
-import ru.rutmiit.dto.InstructorDTO;
-import ru.rutmiit.dto.UserDTO;
+import org.springframework.data.domain.Page;
+import ru.rutmiit.dto.instructor.InstructorInputDTO;
+import ru.rutmiit.dto.instructor.InstructorOutputDTO;
+import ru.rutmiit.dto.instructor.InstructorsViewOutputDTO;
+import ru.rutmiit.models.Instructor;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface InstructorService {
 
-    void addInstructor(InstructorDTO instructorDTO);
-    List<InstructorDTO> getAllInstructors();
-    // TODO: рейтинг инструктора
-    void editInstructor(InstructorDTO instructorDTO);
-    InstructorDTO getInstructorById(UUID uuid);
-    InstructorDTO findByName(String name);
+    String addInstructor(InstructorInputDTO instructorDTO);
 
+    List<String> getAllInstructors();
+
+    void editInstructor(String id, InstructorInputDTO instructorDTO);
+    void deleteInstructor(String id);
+    public List<InstructorsViewOutputDTO> getActiveInstructors();
+    InstructorOutputDTO getInstructorById(UUID uuid);
+
+    InstructorOutputDTO findByName(String name);
+
+    Page<InstructorOutputDTO> getInstructors(String searchTerm, int page, int size);
 }
