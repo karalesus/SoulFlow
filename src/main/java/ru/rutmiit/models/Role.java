@@ -1,9 +1,8 @@
-package ru.rutmiit.domain;
+package ru.rutmiit.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import ru.rutmiit.domain.BaseEntity;
 
 @Entity
 @Table(name = "role")

@@ -1,4 +1,4 @@
-package ru.rutmiit.domain;
+package ru.rutmiit.models;
 
 import jakarta.persistence.*;
 

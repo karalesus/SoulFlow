@@ -1,4 +1,4 @@
-package ru.rutmiit.domain;
+package ru.rutmiit.models;
 
 import jakarta.persistence.*;
 
@@ -57,5 +57,15 @@ public class User extends BaseEntity {
 
     public void setRole(List<Role> role) {
         this.role = role;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", role=" + role +
+                '}';
     }
 }

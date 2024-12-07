@@ -1,7 +1,7 @@
-package ru.rutmiit.domain;
+package ru.rutmiit.models;
 
 import jakarta.persistence.*;
-import ru.rutmiit.domain.compositeKeys.MemberSessionKeys;
+import ru.rutmiit.models.compositeKeys.MemberSessionKeys;
 
 import java.time.LocalDateTime;
 
@@ -41,5 +41,14 @@ public class SessionRegistration {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "SessionRegistration{" +
+                "sessionId=" + id +
+                ", registrationDate=" + registrationDate +
+                ", status=" + status +
+                '}';
     }
 }

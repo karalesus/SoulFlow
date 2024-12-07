@@ -1,10 +1,12 @@
-package ru.rutmiit.domain;
+package ru.rutmiit.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import ru.rutmiit.domain.compositeKeys.MemberSessionKeys;
+import ru.rutmiit.models.compositeKeys.MemberSessionKeys;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "review")
@@ -15,10 +17,13 @@ public class Review {
     private int rate; // ограничения 1..5
     private String comment;
 
-    public Review(MemberSessionKeys id, int rate, String comment) {
+    private LocalDateTime date;
+
+    public Review(MemberSessionKeys id, int rate, String comment, LocalDateTime date) {
         this.id = id;
         this.rate = rate;
         this.comment = comment;
+        this.date = date;
     }
 
     protected Review() {
@@ -50,5 +55,13 @@ public class Review {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
 }

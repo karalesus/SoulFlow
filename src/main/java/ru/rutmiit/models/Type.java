@@ -1,4 +1,4 @@
-package ru.rutmiit.domain;
+package ru.rutmiit.models;
 
 import jakarta.persistence.*;
 
@@ -35,5 +35,10 @@ public class Type extends BaseEntity{
 
     public void setSessionList(List<Session> sessionList) {
         this.sessionList = sessionList;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

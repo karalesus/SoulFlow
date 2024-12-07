@@ -1,7 +1,8 @@
-package ru.rutmiit.domain;
+package ru.rutmiit.models;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,12 +14,12 @@ public class Session extends BaseEntity {
     private String description;
     private LocalDateTime dateTime;
     private int maxCapacity;
-    private int price;
+    private BigDecimal price;
     private Difficulty difficulty;
     private Type type;
     private Instructor instructor;
 
-    public Session(String name, int duration, String description, LocalDateTime dateTime, int maxCapacity, int price, Difficulty difficulty, Type type, Instructor instructor) {
+    public Session(String name, int duration, String description, LocalDateTime dateTime, int maxCapacity, BigDecimal price, Difficulty difficulty, Type type, Instructor instructor) {
         this.name = name;
         this.duration = duration;
         this.description = description;
@@ -79,11 +80,11 @@ public class Session extends BaseEntity {
     }
 
     @Column(name = "price", nullable = false)
-    public int getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -115,5 +116,20 @@ public class Session extends BaseEntity {
 
     public void setInstructor(Instructor instructor) {
         this.instructor = instructor;
+    }
+
+    @Override
+    public String toString() {
+        return "Session{" +
+                "name='" + name + '\'' +
+                ", duration=" + duration +
+                ", description='" + description + '\'' +
+                ", dateTime=" + dateTime +
+                ", maxCapacity=" + maxCapacity +
+                ", price=" + price +
+                ", difficulty=" + difficulty +
+                ", type=" + type +
+                ", instructor=" + instructor +
+                '}';
     }
 }

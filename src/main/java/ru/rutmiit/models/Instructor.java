@@ -1,8 +1,7 @@
-package ru.rutmiit.domain;
+package ru.rutmiit.models;
 
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -14,11 +13,13 @@ public class Instructor extends BaseEntity {
 //    private BigDecimal rating; // ограничение 1..5. Вероятно убрать
     private String photoUrl;
     private List<Session> sessionList;
+    private boolean isDeleted;
 
     public Instructor(String name, String certificate, String photoUrl) {
         this.name = name;
         this.certificate = certificate;
         this.photoUrl = photoUrl;
+        this.isDeleted = false;
     }
 
     protected Instructor() {}
@@ -66,5 +67,19 @@ public class Instructor extends BaseEntity {
 
     public void setSessionList(List<Session> sessionList) {
         this.sessionList = sessionList;
+    }
+
+    @Column(name = "is_deleted", nullable = false)
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

@@ -1,10 +1,10 @@
-package ru.rutmiit.domain.compositeKeys;
+package ru.rutmiit.models.compositeKeys;
 
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import ru.rutmiit.domain.User;
-import ru.rutmiit.domain.Session;
+import ru.rutmiit.models.User;
+import ru.rutmiit.models.Session;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -14,6 +14,14 @@ public class MemberSessionKeys implements Serializable {
 
     private User member;
     private Session session;
+
+    public MemberSessionKeys(User member, Session session) {
+        this.member = member;
+        this.session = session;
+    }
+
+    protected MemberSessionKeys() {
+    }
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
@@ -38,8 +46,8 @@ public class MemberSessionKeys implements Serializable {
     @Override
     public String toString() {
         return "MemberSessionKeys{" +
-                "member=" + member +
-                ", session=" + session +
+                "member=" + member.getId() +
+                ", session=" + session.getId() +
                 '}';
     }
 
