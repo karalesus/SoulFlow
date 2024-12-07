@@ -2,16 +2,18 @@ package ru.rutmiit.dto;
 
 import jakarta.persistence.MappedSuperclass;
 
+import java.util.UUID;
+
 @MappedSuperclass
 public abstract class BaseDTO {
 
-    private String uuid;
+    private UUID uuid;
 
-    public String getUuid() {
+    public UUID getUuid() {
         return uuid;
     }
 
-    public void setUuid(String uuid) {
+    public void setUuid(UUID uuid) {
         this.uuid = uuid;
     }
 }

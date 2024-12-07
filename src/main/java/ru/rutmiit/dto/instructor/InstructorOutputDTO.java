@@ -1,29 +1,35 @@
-package ru.rutmiit.dto;
+package ru.rutmiit.dto.instructor;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
-import ru.rutmiit.domain.Session;
 
-import java.math.BigDecimal;
-import java.util.List;
+public class InstructorOutputDTO {
 
-public class InstructorDTO {
-
+    private String id;
     private String name;
     private String certificate;
 //    private BigDecimal rating; // ограничение 1..5. Вероятно убрать
     private String photoUrl;
+    private boolean isDeleted;
 
-    public InstructorDTO(String name, String certificate, String photoUrl) {
+    public InstructorOutputDTO(String id, String name, String certificate, String photoUrl, boolean isDeleted) {
+        this.id = id;
         this.name = name;
         this.certificate = certificate;
         this.photoUrl = photoUrl;
+        this.isDeleted = isDeleted;
     }
 
-    protected InstructorDTO() {
+    protected InstructorOutputDTO() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @NotNull(message = "Имя не может быть пустым")
@@ -53,5 +59,18 @@ public class InstructorDTO {
 
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

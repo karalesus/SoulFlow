@@ -1,26 +1,26 @@
-package ru.rutmiit.dto;
+package ru.rutmiit.dto.Session;
 
 import jakarta.validation.constraints.*;
-import org.hibernate.validator.constraints.Range;
-import ru.rutmiit.domain.Difficulty;
-import ru.rutmiit.domain.Instructor;
-import ru.rutmiit.domain.Type;
+import ru.rutmiit.models.Difficulty;
+import ru.rutmiit.models.Instructor;
+import ru.rutmiit.models.Type;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class SessionDTO {
+public class SessionInputDTO {
 
     private String name;
     private int duration;
     private String description;
     private LocalDateTime dateTime;
     private int maxCapacity;
-    private int price;
+    private BigDecimal price;
     private String difficultyName;
     private String typeName;
     private String instructor;
 
-    public SessionDTO(String name, int duration, String description, LocalDateTime dateTime, int maxCapacity, int price, String difficulty, String type, String instructor) {
+    public SessionInputDTO(String name, int duration, String description, LocalDateTime dateTime, int maxCapacity, BigDecimal price, String difficulty, String type, String instructor) {
         this.name = name;
         this.duration = duration;
         this.description = description;
@@ -32,9 +32,10 @@ public class SessionDTO {
         this.instructor = instructor;
     }
 
-    protected SessionDTO() {
+    protected SessionInputDTO() {
     }
-    @NotEmpty(message = "Имя не может быть пустым")
+
+    @NotBlank(message = "Имя не может быть пустым")
     @Size(min = 5, max = 127, message = "Имя должно содержать минимум 5 символов")
     public String getName() {
         return name;
@@ -54,8 +55,8 @@ public class SessionDTO {
         this.duration = duration;
     }
 
-    @NotEmpty(message = "Описание не может быть пустым")
-    @Size(min = 5, max = 250, message = "Описание должно содержать минимум 5 символов")
+    @NotBlank(message = "Описание не может быть пустым")
+    @Size(min = 5, max = 255, message = "Описание должно содержать не менее 5 и не более 255 символов")
     public String getDescription() {
         return description;
     }
@@ -82,16 +83,17 @@ public class SessionDTO {
     }
 
     @NotNull(message = "Цена не может быть пустой")
-    @Min(value = 0, message = "Цена не может быть отрицательной")
-    public int getPrice() {
+    @DecimalMin(value = "0.00", message = "Цена не может быть отрицательной")
+    @Digits(integer=4, fraction=2)
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
-    @NotNull(message = "Выберите сложность занятия!")
+    @NotBlank(message = "Выберите сложность занятия!")
     public String getDifficulty() {
         return difficultyName;
     }
@@ -100,7 +102,7 @@ public class SessionDTO {
         this.difficultyName = difficultyName;
     }
 
-//    @NotNull(message = "Выберите тип занятия!")
+    @NotBlank(message = "Выберите тип занятия!")
     public String getType() {
         return typeName;
     }
@@ -109,12 +111,27 @@ public class SessionDTO {
         this.typeName = typeName;
     }
 
-    @NotEmpty(message = "Занятие не может проводиться без инструктора!")
+    @NotBlank(message = "Занятие не может проводиться без инструктора!")
     public String getInstructor() {
         return instructor;
     }
 
     public void setInstructor(String instructor) {
         this.instructor = instructor;
+    }
+
+    @Override
+    public String toString() {
+        return "SessionDTO{" +
+                "name='" + name + '\'' +
+                ", duration=" + duration +
+                ", description='" + description + '\'' +
+                ", dateTime=" + dateTime +
+                ", maxCapacity=" + maxCapacity +
+                ", price=" + price +
+                ", difficultyName='" + difficultyName + '\'' +
+                ", typeName='" + typeName + '\'' +
+                ", instructor='" + instructor + '\'' +
+                '}';
     }
 }
