@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head">
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar">Navbar</div>
+<main class="flex-shrink-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <main class="jumbotron text-center rounded col-md-12 align-self-center pt-5">
+                <div class="justify-content-center">
+                    <h1>Информация о занятии</h1>
+                </div>
+                <div class="row bg-light rounded">
+                        <h2>Занятие</h2>
+                        <h4 th:text="'ID: ' + ${model.session.id}"></h4>
+                        <h2 th:text="'Название: ' + ${model.session.name}">Название</h2>
+                        <h4 th:text="'Длительность: ' + ${model.session.duration} + ' минут'" >Длительность</h4>
+                        <h4 th:text="'Описание: ' + ${model.session.description}">Описание</h4>
+                        <h4 th:text="'Дата и время: ' + ${model.session.dateTime}">Дата и время</h4>
+                        <h4 th:text="'Вместимость: ' + ${model.session.maxCapacity}">Вместимость</h4>
+                        <h4 th:text="'Цена: ' + ${model.session.price}">Цена</h4>
+                        <h4 th:text="'Сложность: ' + ${model.session.difficultyName}">Сложность</h4>
+                        <h4 th:text="'Тип: ' + ${model.session.typeName}">Тип</h4>
+                        <h4 th:text="'Инструктор: ' + ${model.session.instructor}">Инструктор</h4>
+                </div>
+            </main>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"/>
+</body>
+</html>

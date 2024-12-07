@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"/>
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar">Navbar</div>
+<main class="flex-shrink-0">
+    <div class="container">
+        <div class="row justify-content-center pt-5">
+                <div class="container mt-5">
+                    <h2 class="text-center mb-4">Наши инструкторы</h2>
+
+                    <form th:action="@{/instructors}"
+                          th:method="get"
+                          th:object="${form}"
+                          class="mb-3">
+                    </form>
+                <div th:if="${#lists.isEmpty(model.instructors)}" class="alert alert-info">
+                    Инструкторы не найдены
+                </div>
+
+                <div th:if="${not #lists.isEmpty(model.instructors)}" class="row">
+                    <div th:each="instructor : ${model.instructors}" class="col-md-4 mb-4">
+                        <div class="card shadow-sm">
+                            <img th:src="${instructor.photoUrl}"
+                                 alt="Фото инструктора"
+                                 class="card-img-top"
+                                 style="max-height: 300px; object-fit: cover;">
+
+                            <div class="card-body text-center">
+                                <h5 class="card-title" th:text="${instructor.name}">Имя инструктора</h5>
+                                <p class="card-text" th:text="'Сертификат: ' + ${instructor.certificate}">
+                                    Сертификат
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"/>
+</body>
+</html>

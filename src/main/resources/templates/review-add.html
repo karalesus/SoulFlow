@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"/>
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar"></div>
+<main class="flex-shrink-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="jumbotron text-center rounded col-md-8 align-self-center pt-5">
+                <div class="justify-content-center">
+                    <h1>Оставить отзыв на занятие</h1>
+                </div>
+                <form th:action="@{/user/profile/{userId}/add/{sessionId}(userId=${userId}, sessionId=${sessionId})}"
+                      th:method="post"
+                      th:object="${form}"
+                      class="m-md-auto w-50 pb-3">
+                    <div class="mb-3">
+                        <label class="form-label">Оцените работу инструктора</label>
+                        <div>
+                            <label class="form-check-label" for="rate1">
+                                <input th:field="*{rate}" type="radio" class="form-check-input" id="rate1" value="1"/> 1
+                            </label>
+                            <label class="form-check-label" for="rate2">
+                                <input th:field="*{rate}" type="radio" class="form-check-input" id="rate2" value="2"/> 2
+                            </label>
+                            <label class="form-check-label" for="rate3">
+                                <input th:field="*{rate}" type="radio" class="form-check-input" id="rate3" value="3"/> 3
+                            </label>
+                            <label class="form-check-label" for="rate4">
+                                <input th:field="*{rate}" type="radio" class="form-check-input" id="rate4" value="4"/> 4
+                            </label>
+                            <label class="form-check-label" for="rate5">
+                                <input th:field="*{rate}" type="radio" class="form-check-input" id="rate5" value="5"/> 5
+                            </label>
+                        </div>
+                        <small th:if="${#fields.hasErrors('rate')}" th:errors="*{rate}" class="text-danger"></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="comment">Комментарий</label>
+
+                        <textarea th:field="*{comment}" class="form-control" id="comment" rows="4"></textarea>
+                        <small th:if="${#fields.hasErrors('comment')}"
+                               th:errors="*{comment}"
+                               class="text-danger">Error message</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

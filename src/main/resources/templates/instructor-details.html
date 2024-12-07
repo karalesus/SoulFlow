@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"/>
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar">Navbar</div>
+<main class="flex-shrink-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <main class="jumbotron text-center rounded col-md-12 align-self-center pt-5">
+                <div class="justify-content-center">
+                    <h1>Информация об инструкторе</h1>
+                </div>
+                <div class="row bg-light rounded">
+                        <h2>Инструктор</h2>
+                        <h4 th:text="'ID: ' + ${model.instructor.id}"></h4>
+                        <h4 th:text="'ФИО: ' + ${model.instructor.name}"></h4>
+                        <h4 th:text="'Сертификат: ' + ${model.instructor.certificate}"></h4>
+                        <h4 th:text="'Фото: ' + ${model.instructor.photoUrl}"></h4>
+                        <div class="align-bottom"><a class="btn btn-danger align-bottom"
+                                                     th:href="@{/instructors/{id}/delete(id=${model.instructor.id})}">Удалить инструктора</a>
+                        </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"/>
+</body>
+</html>

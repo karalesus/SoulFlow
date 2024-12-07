@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"/>
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar">Navbar</div>
+<main class="flex-shrink-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="jumbotron text-center rounded col-md-8 align-self-center pt-5">
+                <h2 class="text-center text-dark mt-5">Поиск инструкторов</h2>
+
+                <form th:action="@{/instructors}"
+                      th:method="get"
+                      th:object="${form}"
+                      class="mb-3">
+                    <div class="input-group">
+                        <input type="text"
+                               th:field="*{searchTerm}"
+                               class="form-control"
+                               placeholder="Поиск инструкторов"/>
+                        <input type="hidden" th:field="*{page}"/>
+                        <input type="hidden" th:field="*{size}"/>
+                        <button class="btn btn-primary" type="submit">Поиск</button>
+                    </div>
+                </form>
+
+                <div th:if="${#lists.isEmpty(model.instructors)}" class="alert alert-info">
+                    Инструкторы не найдены
+                </div>
+
+                <div th:if="${not #lists.isEmpty(model.instructors)}">
+                    <div th:each="instructor : ${model.instructors}"
+                         class="d-flex flex-column bg-text mb-3 p-3 border rounded">
+                        <h2 th:text="'ФИО: ' + ${instructor.name}">ФИО</h2>
+                        <h4 th:text="'Сертификат: ' + ${instructor.certificate}">Сертификат</h4>
+                        <h4 th:text="'Фото: ' + ${instructor.photoUrl}">Фото</h4>
+                        <h4 th:text="'Удален: ' +  ${instructor.isDeleted}">Фото</h4>
+                        <div class="mt-2">
+                            <a class="btn btn-secondary"
+                               th:href="@{/instructors/{id}(id=${instructor.id})}">Подробнее</a>
+                            <a class="btn btn-primary"
+                               th:href="@{/instructors/{id}/edit(id=${instructor.id})}">Редактировать</a>
+                            <a class="btn btn-danger"
+                               th:href="@{/instructors/{id}/delete(id=${instructor.id})}"
+                               th:if="${!instructor.isDeleted}"
+                               onclick="return confirm('Вы уверены, что хотите уволить этого инструктора?');">Уволить</a>
+                        </div>
+                    </div>
+
+                    <nav th:if="${model.totalPages > 1}" aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item"
+                                th:each="pageNumber : ${#numbers.sequence(1, model.totalPages)}"
+                                th:classappend="${pageNumber == form.page} ? 'active'">
+                                <a class="page-link"
+                                   th:href="@{/instructors(page=${pageNumber}, size=${form.size}, searchTerm=${form.searchTerm})}"
+                                   th:text="${pageNumber}">1</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+
+                <div class="mt-4">
+                    <a class="btn btn-success" th:href="@{/instructors/add}">Добавить нового инструктора</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"/>
+</body>
+</html>

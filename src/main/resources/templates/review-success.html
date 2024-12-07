@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"/>
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+<main class="flex-shrink-0">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center mt-5">
+                <div class="alert alert-success" role="alert">
+                    <h1>Супер!</h1>
+                    <p>Ваш отзыв успешно оставлен.</p>
+                </div>
+                <a th:href="@{/user/profile/{userId}(userId=${userId})}" class="btn btn-primary">Вернуться в профиль</a>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

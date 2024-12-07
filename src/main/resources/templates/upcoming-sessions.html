@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head">
+    <title>Расписание занятий</title>
+</head>
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar">Navbar</div>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Ближайшие занятия</h2>
+
+    <form th:action="@{/schedule/upcoming}"
+          th:method="get"
+          th:object="${form}" class="mb-3">
+    </form>
+
+    <div th:if="${#lists.isEmpty(model.sessions)}" class="alert alert-info text-center">
+        Занятия не найдены
+    </div>
+
+    <div th:if="${not #lists.isEmpty(model.sessions)}" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div th:each="sessions : ${model.sessions}" class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${sessions.name}">Название занятия</h5>
+                    <p class="card-text"><span th:text="${sessions.description}">Описание занятия</span>
+                    </p>
+                    <p class="card-text"><strong>Дата и время:</strong>
+                        <span th:text="${#temporals.format(sessions.dateTime, 'dd MMMM yyyy, HH:mm', new java.util.Locale('ru', 'RU'))}">
+                            Дата и время
+                        </span>
+                    </p>
+                    <p class="card-text"><strong>Длительность:</strong> <span th:text="${sessions.duration + ' минут'}">60</span>
+                    </p>
+                    <p class="card-text"><strong>Свободные места:</strong> <span
+                            th:text="${sessions.availableSpots}"></span>
+                    </p>
+                    <p class="card-text"><strong>Цена:</strong> <span th:text="${#numbers.formatDecimal(sessions.price, 2, 0)}">500</span> рублей</p>
+                    <p class="card-text"><strong>Сложность:</strong> <span
+                            th:text="${sessions.difficultyName}">Средняя</span></p>
+                    <p class="card-text"><strong>Тип:</strong> <span th:text="${sessions.typeName}">Йога</span></p>
+                    <p class="card-text"><strong>Инструктор:</strong> <span th:text="${sessions.instructor}">Анна Иванова</span>
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center">
+                    <form th:action="@{/schedule/register/{sessionId}(sessionId=${sessions.id})}" method="post">
+                        <button type="submit" class="btn btn-info" onclick="return confirm('Вы уверены, что хотите записаться на занятие?');">Записаться</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="fragments/footer" class="mt-auto"></footer>
+</body>
+</html>

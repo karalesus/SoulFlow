@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"/>
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar">Navbar</div>
+<main class="flex-shrink-0">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="jumbotron text-center rounded">
+                    <h2 class="text-center text-dark mt-5">Отзывы на занятия в нашей студии</h2>
+
+                    <form th:action="@{/reviews}" th:method="get" th:object="${form}" class="mb-4">
+                        <div class="input-group">
+                            <input type="hidden" th:field="*{page}"/>
+                            <input type="hidden" th:field="*{size}"/>
+                        </div>
+                    </form>
+
+                    <div th:if="${#lists.isEmpty(model.reviews)}" class="alert alert-info">
+                        Отзывы не найдены
+                    </div>
+
+                    <div th:each="review : ${model.reviews}" class="card mb-3 shadow-sm">
+                            <div class="card-body">
+                                <p class="card-text mb-1 text-start" th:text="'Оценка: ' + ${review.rate} + '/5'"></p>
+                                <p class="card-text mb-1 text-start" th:text="${review.comment}"></p>
+                                <p class="card-text text-muted text-start" th:text="${#temporals.format(review.date, 'dd.MM.yyyy')}"></p>
+                            </div>
+
+                        <nav th:if="${model.totalPages > 1}" aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item" th:each="pageNumber : ${#numbers.sequence(1, model.totalPages)}"
+                                    th:classappend="${pageNumber == form.page} ? 'active'">
+                                    <a class="page-link" th:href="@{/reviews(page=${pageNumber}, size=${form.size}, searchTerm=${form.searchTerm})}"
+                                       th:text="${pageNumber}">1</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"/>
+</body>
+</html>

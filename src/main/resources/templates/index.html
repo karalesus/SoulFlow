@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"/>
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar">Navbar</div>
+<main class="flex-shrink-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="jumbotron text-center rounded col-md-8 align-self-center pt-5">
+                <div class="justify-content-center">
+                    <h1>Soul Flow – йога для тебя!</h1>
+                </div>
+                <div>&nbsp;
+                    <div class="justify-content-center">
+                        <h5>Наши практики помогут полностью оторваться от суеты повседневности и отправиться в путешествие по собственной Вселенной. Здесь вы сможете обрести гармонию с природой, миром и собой.</h5>
+                    </div>
+                    <div class="justify-content-center">
+                        <img th:src="@{/img/yoga.png}" alt="Картинка йоги скоро появится.."
+                             style="max-height: 300px; object-fit: cover;"
+                        >
+                    </div>
+                    <form th:action="@{/schedule/upcoming}" method="get" >
+                        <button type="submit" class="btn btn-outline-secondary">Посмотреть ближайшие занятия</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"/>
+</body>
+</html>

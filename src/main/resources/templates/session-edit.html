@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"/>
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar">Navbar</div>
+<main class="flex-shrink-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="jumbotron text-center rounded col-md-8 align-self-center pt-5">
+                <div class="justify-content-center">
+                    <h1>Редактировать занятие</h1>
+                </div>
+                <form th:action="@{/sessions/{id}/edit(id=${form.id})}"
+                      th:method="post"
+                      th:object="${form}"
+                      class="m-md-auto w-50 pb-3">
+
+                    <input th:field="*{id}"
+                           type="hidden"
+                           class="form-control text-center"
+                           id="id"/>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="name">Имя занятия</label>
+                        <input th:field="*{name}"
+                               th:errorclass="is-invalid"
+                               type="text"
+                               class="form-control text-center"
+                               id="name"/>
+                        <small th:if="${#fields.hasErrors('name')}"
+                               th:errors="*{name}"
+                               class="text-danger">Ошибка в имени занятия</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="duration">Длительность</label>
+                        <input th:field="*{duration}"
+                               th:errorclass="is-invalid"
+                               type="number"
+                               class="form-control text-center"
+                               id="duration"/>
+                        <small th:if="${#fields.hasErrors('duration')}"
+                               th:errors="*{duration}"
+                               class="text-danger">Ошибка в длительности</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="description">Описание</label>
+                        <input th:field="*{description}"
+                               th:errorclass="is-invalid"
+                               type="text"
+                               class="form-control text-center"
+                               id="description"/>
+                        <small th:if="${#fields.hasErrors('description')}"
+                               th:errors="*{description}"
+                               class="text-danger">Ошибка в описании</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="dateTime">Дата и время</label>
+                        <input th:field="*{dateTime}"
+                               th:errorclass="is-invalid"
+                               type="datetime-local"
+                               class="form-control text-center"
+                               id="dateTime"/>
+                        <small th:if="${#fields.hasErrors('dateTime')}"
+                               th:errors="*{dateTime}"
+                               class="text-danger">Ошибка в дате и времени</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="maxCapacity">Максимальная вместимость</label>
+                        <input th:field="*{maxCapacity}"
+                               th:errorclass="is-invalid"
+                               type="number"
+                               class="form-control text-center"
+                               id="maxCapacity"/>
+                        <small th:if="${#fields.hasErrors('maxCapacity')}"
+                               th:errors="*{maxCapacity}"
+                               class="text-danger">Ошибка в вместимости</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="price">Цена</label>
+                        <input th:field="*{price}"
+                               th:errorclass="is-invalid"
+                               type="number"
+                               class="form-control text-center"
+                               id="price"/>
+                        <small th:if="${#fields.hasErrors('price')}"
+                               th:errors="*{price}"
+                               class="text-danger">Ошибка в цене</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="difficultyName">Сложность</label>
+                        <select th:field="*{difficultyName}"
+                                th:errorclass="is-invalid"
+                                class="form-control text-center"
+                                id="difficultyName">
+                            <option value="" >Выберите сложность</option>
+                            <option th:each="difficulty : ${difficulties}"
+                                    th:value="${difficulty}"
+                                    th:text="${difficulty}">
+                            </option>
+                        </select>
+                        <small th:if="${#fields.hasErrors('difficultyName')}"
+                               th:errors="*{difficultyName}"
+                               class="text-danger">Ошибка в сложности</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="typeName">Тип</label>
+                        <select th:field="*{typeName}"
+                                th:errorclass="is-invalid"
+                                class="form-control text-center"
+                                id="typeName">
+                            <option value="">Выберите тип</option>
+                            <option th:each="type : ${types}"
+                                    th:value="${type}"
+                                    th:text="${type}">
+                            </option>
+                        </select>
+                        <small th:if="${#fields.hasErrors('typeName')}"
+                               th:errors="*{typeName}"
+                               class="text-danger">Ошибка в типе занятия</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="instructorName">Инструктор</label>
+                        <select th:field="*{instructorName}"
+                                th:errorclass="is-invalid"
+                                class="form-control text-center"
+                                id="instructorName">
+                            <option value="">Выберите инструктора</option>
+                            <option th:each="instructor : ${instructors}"
+                                    th:value="${instructor}"
+                                    th:text="${instructor}">
+                            </option>
+                        </select>
+                        <small th:if="${#fields.hasErrors('instructorName')}"
+                               th:errors="*{instructorName}"
+                               class="text-danger">Ошибка в выборе инструктора</small>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"/>
+</body>
+</html>

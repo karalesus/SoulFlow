@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head">
+<body class="d-flex flex-column h-100">
+<div th:replace="fragments/navbar">Navbar</div>
+<main class="flex-shrink-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="jumbotron text-center rounded col-md-8 align-self-center pt-5">
+                <h2 class="text-center text-dark mt-5">Поиск занятий</h2>
+
+                <form th:action="@{/sessions}"
+                      th:method="get"
+                      th:object="${form}"
+                      class="mb-3">
+                    <div class="input-group">
+                        <input type="text"
+                               th:field="*{searchTerm}"
+                               class="form-control"
+                               placeholder="Поиск занятий"/>
+                        <input type="hidden" th:field="*{page}"/>
+                        <input type="hidden" th:field="*{size}"/>
+                        <button class="btn btn-primary" type="submit">Поиск</button>
+                    </div>
+                </form>
+
+                <div th:if="${#lists.isEmpty(model.sessions)}" class="alert alert-info">
+                    Занятия не найдены
+                </div>
+
+                <div th:if="${not #lists.isEmpty(model.sessions)}">
+                    <div th:each="sessions : ${model.sessions}"
+                         class="d-flex flex-column bg-text mb-3 p-3 border rounded">
+                        <h2 th:text="'Название: ' + ${sessions.name}">Название</h2>
+                        <h4 th:text="'Длительность: ' + ${sessions.duration} + ' минут'" >Длительность</h4>
+                        <h4 th:text="'Описание: ' + ${sessions.description}">Описание</h4>
+                        <h4 th:text="'Дата и время: ' + ${sessions.dateTime}">Дата и время</h4>
+                        <h4 th:text="'Вместимость: ' + ${sessions.maxCapacity}">Вместимость</h4>
+                        <h4 th:text="'Цена: ' + ${sessions.price}">Цена</h4>
+                        <h4 th:text="'Сложность: ' + ${sessions.difficultyName}">Сложность</h4>
+                        <h4 th:text="'Тип: ' + ${sessions.typeName}">Тип</h4>
+                        <h4 th:text="'Инструктор: ' + ${sessions.instructor}">Инструктор</h4>
+                        <div class="mt-2">
+                            <a class="btn btn-secondary"
+                               th:href="@{/sessions/{id}(id=${sessions.id})}">Подробнее</a>
+                            <a class="btn btn-primary"
+                               th:href="@{/sessions/{id}/edit(id=${sessions.id})}">Редактировать</a>
+<!--                            <a class="btn btn-danger"-->
+<!--                               th:href="@{/sessions/{sessionId}/delete(sessionId=${sessions.sessionId})}"-->
+<!--                               onclick="return confirm('Вы уверены, что хотите удалить этого инструктора?');">Удалить</a>-->
+                        </div>
+                    </div>
+
+                    <nav th:if="${model.totalPages > 1}" aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item"
+                                th:each="pageNumber : ${#numbers.sequence(1, model.totalPages)}"
+                                th:classappend="${pageNumber == form.page} ? 'active'">
+                                <a class="page-link"
+                                   th:href="@{/sessions(page=${pageNumber}, size=${form.size}, searchTerm=${form.searchTerm})}"
+                                   th:text="${pageNumber}">1</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+
+                <div class="mt-4">
+                    <a class="btn btn-success" th:href="@{/sessions/add}">Добавить новое занятие</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"/>
+</body>
+</html>
