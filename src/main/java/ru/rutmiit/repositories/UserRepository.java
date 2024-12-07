@@ -1,11 +1,8 @@
-package ru.rutmiit.repository;
+package ru.rutmiit.repositories;
 
-import ru.rutmiit.domain.SessionRegistration;
-import ru.rutmiit.domain.User;
+import ru.rutmiit.models.User;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 
 public interface UserRepository {

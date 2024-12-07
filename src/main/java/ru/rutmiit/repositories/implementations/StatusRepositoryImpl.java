@@ -1,10 +1,9 @@
-package ru.rutmiit.repository.implementations;
+package ru.rutmiit.repositories.implementations;
 
 import org.springframework.stereotype.Repository;
-import ru.rutmiit.domain.Instructor;
-import ru.rutmiit.domain.Status;
-import ru.rutmiit.repository.BaseRepository;
-import ru.rutmiit.repository.StatusRepository;
+import ru.rutmiit.models.Status;
+import ru.rutmiit.repositories.BaseRepository;
+import ru.rutmiit.repositories.StatusRepository;
 
 import java.util.UUID;
 

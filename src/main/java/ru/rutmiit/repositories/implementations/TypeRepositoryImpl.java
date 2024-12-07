@@ -1,9 +1,9 @@
-package ru.rutmiit.repository.implementations;
+package ru.rutmiit.repositories.implementations;
 
 import org.springframework.stereotype.Repository;
-import ru.rutmiit.domain.Type;
-import ru.rutmiit.repository.BaseRepository;
-import ru.rutmiit.repository.TypeRepository;
+import ru.rutmiit.models.Type;
+import ru.rutmiit.repositories.BaseRepository;
+import ru.rutmiit.repositories.TypeRepository;
 
 import java.util.UUID;
 

@@ -1,8 +1,8 @@
-package ru.rutmiit.repository.implementations;
+package ru.rutmiit.repositories.implementations;
 
 import org.springframework.stereotype.Repository;
-import ru.rutmiit.domain.Difficulty;
-import ru.rutmiit.repository.BaseRepository;
+import ru.rutmiit.models.Difficulty;
+import ru.rutmiit.repositories.BaseRepository;
 
 import java.util.UUID;
 

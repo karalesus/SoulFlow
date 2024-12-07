@@ -1,11 +1,11 @@
-package ru.rutmiit.repository.implementations;
+package ru.rutmiit.repositories.implementations;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
-import ru.rutmiit.domain.User;
-import ru.rutmiit.repository.BaseRepository;
-import ru.rutmiit.repository.UserRepository;
+import ru.rutmiit.models.User;
+import ru.rutmiit.repositories.BaseRepository;
+import ru.rutmiit.repositories.UserRepository;
 
 import java.util.Optional;
 import java.util.UUID;

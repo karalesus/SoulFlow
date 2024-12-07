@@ -1,4 +1,4 @@
-package ru.rutmiit.repository;
+package ru.rutmiit.repositories;
 
 public interface DifficultyRepository {
 }

@@ -1,4 +1,4 @@
-package ru.rutmiit.repository;
+package ru.rutmiit.repositories;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @NoRepositoryBean
-public abstract class BaseRepository<Entity, UUID> {
+public abstract class BaseRepository<Entity, KeyType> {
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -25,8 +25,8 @@ public abstract class BaseRepository<Entity, UUID> {
         return entity;
     }
 
-    public Optional<Entity> findById(UUID uuid) {
-        return Optional.ofNullable(entityManager.find(entityClass, uuid));
+    public Optional<Entity> findById(KeyType id) {
+        return Optional.ofNullable(entityManager.find(entityClass, id));
     }
 
     public List<Entity> findAll() {
