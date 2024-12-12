@@ -60,7 +60,7 @@ public class Instructor extends BaseEntity {
         this.photoUrl = photoUrl;
     }
 
-    @OneToMany(mappedBy = "instructor", targetEntity = Session.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "instructor", targetEntity = Session.class, fetch = FetchType.LAZY)
     public List<Session> getSessionList() {
         return sessionList;
     }

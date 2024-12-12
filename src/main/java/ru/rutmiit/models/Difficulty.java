@@ -26,7 +26,7 @@ public class Difficulty extends BaseEntity {
         this.name = name;
     }
 
-    @OneToMany(mappedBy = "difficulty", targetEntity = Session.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "difficulty", targetEntity = Session.class, fetch = FetchType.LAZY)
     public List<Session> getSessionList() {
         return sessionList;
     }

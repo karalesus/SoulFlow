@@ -28,7 +28,7 @@ public class Type extends BaseEntity{
         this.name = name;
     }
 
-    @OneToMany(mappedBy = "type", targetEntity = Session.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "type", targetEntity = Session.class, fetch = FetchType.LAZY)
     public List<Session> getSessionList() {
         return sessionList;
     }

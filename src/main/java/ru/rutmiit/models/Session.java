@@ -88,7 +88,7 @@ public class Session extends BaseEntity {
         this.price = price;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "difficulty_id", nullable = false)
     public Difficulty getDifficulty() {
         return difficulty;
@@ -98,7 +98,7 @@ public class Session extends BaseEntity {
         this.difficulty = difficulty;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_id", nullable = false)
     public Type getType() {
         return type;
@@ -108,7 +108,7 @@ public class Session extends BaseEntity {
         this.type = type;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "instructor_id", nullable = false)
     public Instructor getInstructor() {
         return instructor;

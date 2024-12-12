@@ -51,11 +51,11 @@ public class User extends BaseEntity {
     }
 
     @ManyToMany(fetch = FetchType.EAGER)
-    public List<Role> getRole() {
+    public List<Role> getRoles() {
         return role;
     }
 
-    public void setRole(List<Role> role) {
+    public void setRoles(List<Role> role) {
         this.role = role;
     }
 

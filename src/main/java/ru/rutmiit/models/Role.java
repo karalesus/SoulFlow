@@ -1,28 +1,27 @@
 package ru.rutmiit.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "role")
 public class Role extends BaseEntity {
 
-    private String name;
+    private UserRoles name;
 
-    public Role(String name) {
+    public Role(UserRoles name) {
         this.name = name;
     }
 
     protected Role() {
     }
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "name", unique = true)
-    public String getName() {
+    public UserRoles getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(UserRoles name) {
         this.name = name;
     }
 }

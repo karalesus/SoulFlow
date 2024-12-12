@@ -3,6 +3,7 @@ package ru.rutmiit.models;
 import jakarta.persistence.*;
 import ru.rutmiit.models.compositeKeys.MemberSessionKeys;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,6 +15,7 @@ public class SessionRegistration {
     private LocalDateTime registrationDate;
 
     private Status status;
+    private BigDecimal finalPrice;
 
     @EmbeddedId
     public MemberSessionKeys getId() {
@@ -41,6 +43,15 @@ public class SessionRegistration {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    @Column(name = "final_price", nullable = false)
+    public BigDecimal getFinalPrice() {
+        return finalPrice;
+    }
+
+    public void setFinalPrice(BigDecimal finalPrice) {
+        this.finalPrice = finalPrice;
     }
 
     @Override
