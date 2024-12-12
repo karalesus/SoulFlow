@@ -1,26 +1,16 @@
 package ru.rutmiit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import ru.rutmiit.dto.Review.ReviewOutputDTO;
-import ru.rutmiit.dto.SessionRegistrationDTO;
-import ru.rutmiit.exceptions.review.InvalidReviewDataException;
 import ru.rutmiit.models.*;
-import ru.rutmiit.dto.Session.SessionInputDTO;
-import ru.rutmiit.dto.UserDTO;
-import ru.rutmiit.exceptions.instructor.InvalidInstructorDataException;
-import ru.rutmiit.exceptions.session.InvalidSessionDataException;
-import ru.rutmiit.exceptions.user.InvalidUserDataException;
 import ru.rutmiit.repositories.implementations.*;
 import ru.rutmiit.service.implementations.*;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Component
@@ -35,22 +25,18 @@ public class ApplicationCommandLineRunner implements CommandLineRunner {
     private final TypeRepositoryImpl typeRepository;
     private final DifficultyRepositoryImpl difficultyRepository;
     private final StatusRepositoryImpl statusRepository;
-    private final InstructorServiceImpl instructorService;
-    private final SessionServiceImpl sessionService;
-    private final SessionRegistrationServiceImpl sessionRegistrationService;
-    private final ReviewServiceImpl reviewService;
+    private final PasswordEncoder passwordEncoder;
+    private final String defaultPassword;
     @Autowired
-    public ApplicationCommandLineRunner(UserServiceImpl userService, UserRepositoryImpl userRepository, RoleRepositoryImpl roleRepository, TypeRepositoryImpl typeRepository, DifficultyRepositoryImpl difficultyRepository, StatusRepositoryImpl statusRepository, InstructorServiceImpl instructorService, SessionServiceImpl sessionService, SessionRegistrationServiceImpl sessionRegistrationService, ReviewServiceImpl reviewService) {
+    public ApplicationCommandLineRunner(UserServiceImpl userService, UserRepositoryImpl userRepository, RoleRepositoryImpl roleRepository, TypeRepositoryImpl typeRepository, DifficultyRepositoryImpl difficultyRepository, StatusRepositoryImpl statusRepository, PasswordEncoder passwordEncoder,@Value("${app.default.password}") String defaultPassword) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.typeRepository = typeRepository;
         this.difficultyRepository = difficultyRepository;
         this.statusRepository = statusRepository;
-        this.instructorService = instructorService;
-        this.sessionService = sessionService;
-        this.sessionRegistrationService = sessionRegistrationService;
-        this.reviewService = reviewService;
+        this.passwordEncoder = passwordEncoder;
+        this.defaultPassword = defaultPassword;
     }
 
     @Override
@@ -127,9 +113,6 @@ public class ApplicationCommandLineRunner implements CommandLineRunner {
 //        }
 //    }
 
-    private void getRatingByInstructor() {
-    }
-
 //    private void addReview() throws IOException {
 //        System.out.println("Введите отзыв в таком формате: id_участника;id_занятия;рейтинг(1-5);комментарий");
 //        String[] reviewParams = bufferedReader.readLine().split(";");
@@ -149,12 +132,12 @@ public class ApplicationCommandLineRunner implements CommandLineRunner {
 //        sessionsList.forEach(s -> System.out.printf("Занятие: %s Дата и время: %s Инструктор: %s\n", s.getName(), s.getDateTime(), s.getInstructor()));
 //    }
 
-    private void getAllSessions() {
-        List<SessionInputDTO> sessionsList = this.sessionService
-                .getAllSessions();
-
-        sessionsList.forEach(s -> System.out.printf("Занятие: %s Дата и время: %s Инструктор: %s\n", s.getName(), s.getDateTime(), s.getInstructor()));
-    }
+//    private void getAllSessions() {
+//        List<SessionInputDTO> sessionsList = this.sessionService
+//                .getAllSessions();
+//
+//        sessionsList.forEach(s -> System.out.printf("Занятие: %s Дата и время: %s Инструктор: %s\n", s.getName(), s.getDateTime(), s.getInstructor()));
+//    }
 
 //    private void addSession() throws IOException {
 //        // Хатха-йога для спокойствия души,120,пример описания,2024-11-06 12:00,20,1500,начинающий,хатха,Трофимова Анна Владимировна
@@ -196,19 +179,19 @@ public class ApplicationCommandLineRunner implements CommandLineRunner {
 //        }
 //    }
 
-    private void register() throws IOException {
-        System.out.println("Введите данные пользователя в таком формате: имя email пароль");
-        String[] userParams = bufferedReader.readLine().split("\\s+");
-
-        UserDTO userDTO = new UserDTO(userParams[0], userParams[1], userParams[2]);
-
-        try {
-            this.userService.register(userDTO);
-            System.out.println("Участник добавлен!");
-        } catch (InvalidUserDataException e) {
-            System.out.println("Ошибка добавления пользователя: " + e.getMessage());
-        }
-    }
+//    private void register() throws IOException {
+//        System.out.println("Введите данные пользователя в таком формате: имя email пароль");
+//        String[] userParams = bufferedReader.readLine().split("\\s+");
+//
+//        UserDTO userDTO = new UserDTO(userParams[0], userParams[1], userParams[2]);
+//
+//        try {
+//            this.userService.register(userDTO);
+//            System.out.println("Участник добавлен!");
+//        } catch (InvalidUserDataException e) {
+//            System.out.println("Ошибка добавления пользователя: " + e.getMessage());
+//        }
+//    }
 
 //    private void editUser() throws IOException {
 //        System.out.println("Введите данные пользователя в таком формате: новое_имя существующий_email пароль");
@@ -224,20 +207,20 @@ public class ApplicationCommandLineRunner implements CommandLineRunner {
 //        }
 //    }
 
-    private void showAllUsers() throws IOException {
-        List<UserDTO> usersList = this.userService
-                .getAllUsers();
-
-        usersList.forEach(s -> System.out.printf("Пользователь: %s Почта: %s\n", s.getName(), s.getEmail()));
-    }
+//    private void showAllUsers() throws IOException {
+//        List<UserDTO> usersList = this.userService
+//                .getAllUsers();
+//
+//        usersList.forEach(s -> System.out.printf("Пользователь: %s Почта: %s\n", s.getName(), s.getEmail()));
+//    }
 
     private void initRoles() {
-        if (roleRepository.findByName("ADMIN").isPresent() && roleRepository.findByName("MEMBER").isPresent()) {
+        if (roleRepository.findRoleByName(UserRoles.ADMIN).isPresent() && roleRepository.findRoleByName(UserRoles.MEMBER).isPresent()) {
             System.out.println("Роли уже проинициализированы.");
             return;
         }
-        Role adminRole = new Role("ADMIN");
-        Role memberRole = new Role("MEMBER");
+        Role adminRole = new Role(UserRoles.ADMIN);
+        Role memberRole = new Role(UserRoles.MEMBER);
         roleRepository.save(adminRole);
         roleRepository.save(memberRole);
 
@@ -248,13 +231,14 @@ public class ApplicationCommandLineRunner implements CommandLineRunner {
             System.out.println("Администратор уже существует.");
             return;
         }
-        Role adminRole = roleRepository.findByName("ADMIN").orElseThrow();
+        var adminRole = roleRepository.findRoleByName(UserRoles.ADMIN).orElseThrow();
 
-        User adminUser = new User("admin", "admin@mail.ru", "123");
-        adminUser.setRole(List.of(adminRole));
+        User adminUser = new User("Admin Adminovich", "admin@mail.ru", passwordEncoder.encode(defaultPassword));
+        adminUser.setRoles(List.of(adminRole));
 
         userRepository.save(adminUser);
     }
+
     private void initTypes() {
         List<String> typeNames = List.of("хатха", "медитация", "кундалини", "фитнес", "виньяса", "ваджра");
 
@@ -264,6 +248,7 @@ public class ApplicationCommandLineRunner implements CommandLineRunner {
             }
         }
     }
+
     private void initDifficulties() {
         List<String> difficultyNames = List.of("начинающий", "средний", "продвинутый");
 
