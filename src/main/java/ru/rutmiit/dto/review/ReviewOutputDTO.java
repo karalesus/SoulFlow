@@ -1,6 +1,4 @@
-package ru.rutmiit.dto.Review;
-
-import jakarta.validation.constraints.*;
+package ru.rutmiit.dto.review;
 
 import java.time.LocalDateTime;
 
@@ -8,8 +6,7 @@ public class ReviewOutputDTO {
 
     private String memberId;
     private String sessionId;
-
-    private Integer rate; // ограничения 1..5
+    private Integer rate;
     private String comment;
 
     private LocalDateTime date;
@@ -49,9 +46,6 @@ public class ReviewOutputDTO {
         this.sessionId = sessionId;
     }
 
-    @NotNull(message = "Поставьте рейтинг инструктору!")
-    @Min(1)
-    @Max(5)
     public Integer getRate() {
         return rate;
     }
@@ -59,7 +53,6 @@ public class ReviewOutputDTO {
     public void setRate(Integer rate) {
         this.rate = rate;
     }
-    @Size(min = 5, max = 255, message = "Отзыв должен содержать минимум 2 символа")
     public String getComment() {
         return comment;
     }

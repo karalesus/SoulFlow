@@ -1,18 +1,16 @@
-package ru.rutmiit.dto.Session;
+package ru.rutmiit.dto.session;
 
 import jakarta.validation.constraints.*;
-import ru.rutmiit.models.Difficulty;
-import ru.rutmiit.models.Instructor;
-import ru.rutmiit.models.Type;
+import ru.rutmiit.utils.validation.date.PresentOrFuture;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class SessionInputDTO {
-
     private String name;
     private int duration;
     private String description;
+    @PresentOrFuture(message = "Дата и время должны указывать на предстоящую дату!")
     private LocalDateTime dateTime;
     private int maxCapacity;
     private BigDecimal price;

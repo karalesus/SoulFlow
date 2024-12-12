@@ -9,7 +9,6 @@ public class InstructorOutputDTO {
     private String id;
     private String name;
     private String certificate;
-//    private BigDecimal rating; // ограничение 1..5. Вероятно убрать
     private String photoUrl;
     private boolean isDeleted;
 
@@ -32,8 +31,6 @@ public class InstructorOutputDTO {
         this.id = id;
     }
 
-    @NotNull(message = "Имя не может быть пустым")
-    @Length(min = 2, message = "Ошибка: введите минимум 2 символа")
     public String getName() {
         return name;
     }
@@ -42,8 +39,6 @@ public class InstructorOutputDTO {
         this.name = name;
     }
 
-    @NotNull(message = "Сертификат не может быть пустым")
-    @Length(min = 2, message = "Ошибка: введите минимум 2 символа")
     public String getCertificate() {
         return certificate;
     }
@@ -52,7 +47,6 @@ public class InstructorOutputDTO {
         this.certificate = certificate;
     }
 
-    @NotEmpty(message = "Укажите ссылку на фотографию!")
     public String getPhotoUrl() {
         return photoUrl;
     }

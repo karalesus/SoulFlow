@@ -1,12 +1,14 @@
-package ru.rutmiit.dto;
+package ru.rutmiit.dto.user;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
+import ru.rutmiit.utils.validation.email.UniqueUserEmail;
 
-public class UserDTO extends BaseDTO {
+public class UserDTO {
     private String name;
+    @UniqueUserEmail
     private String email;
     private String password;
 
@@ -42,6 +44,7 @@ public class UserDTO extends BaseDTO {
 
     @NotBlank
     @Length(min = 6, message = "Ошибка: пароль должен состоять из минимум 6 символов")
+
     public String getPassword() {
         return password;
     }

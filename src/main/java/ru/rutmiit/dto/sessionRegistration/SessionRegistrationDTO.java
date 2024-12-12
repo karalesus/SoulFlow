@@ -1,15 +1,18 @@
-package ru.rutmiit.dto;
+package ru.rutmiit.dto.sessionRegistration;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class SessionRegistrationDTO {
 
     private UUID memberId;
     private UUID sessionId;
+    private BigDecimal finalPrice;
 
-    public SessionRegistrationDTO(UUID memberId, UUID sessionId) {
+    public SessionRegistrationDTO(UUID memberId, UUID sessionId, BigDecimal finalPrice) {
         this.memberId = memberId;
         this.sessionId = sessionId;
+        this.finalPrice = finalPrice;
     }
 
     protected SessionRegistrationDTO() {
@@ -29,6 +32,14 @@ public class SessionRegistrationDTO {
 
     public void setSessionId(UUID sessionId) {
         this.sessionId = sessionId;
+    }
+
+    public BigDecimal getFinalPrice() {
+        return finalPrice;
+    }
+
+    public void setFinalPrice(BigDecimal finalPrice) {
+        this.finalPrice = finalPrice;
     }
 
     @Override

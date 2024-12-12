@@ -1,4 +1,4 @@
-package ru.rutmiit.dto.Session;
+package ru.rutmiit.dto.session;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

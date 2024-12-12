@@ -1,4 +1,4 @@
-package ru.rutmiit.dto.Review;
+package ru.rutmiit.dto.review;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -11,7 +11,7 @@ public class ReviewInputDTO {
 
     private String sessionId;
 
-    private Integer rate; // ограничения 1..5
+    private Integer rate;
     private String comment;
 
     public ReviewInputDTO(String memberId, String sessionId, Integer rate, String comment) {

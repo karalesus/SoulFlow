@@ -1,15 +1,17 @@
-package ru.rutmiit.dto;
+package ru.rutmiit.dto.user;
+
+import ru.rutmiit.utils.validation.user.MinLengthForNewPassword;
 
 public class EditUserDTO {
 
     private String id;
-
     private String name;
     private String email;
     private String currentPassword;
+    @MinLengthForNewPassword(value = 6, message = "Новый пароль должен содержать не менее 6 символов")
     private String newPassword;
+    @MinLengthForNewPassword(value = 6, message = "Новый пароль должен содержать не менее 6 символов")
     private String confirmNewPassword;
-
 
     public EditUserDTO(String id, String name, String email, String currentPassword, String newPassword, String confirmNewPassword) {
         this.id = id;
