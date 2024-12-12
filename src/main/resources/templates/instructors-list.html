@@ -35,12 +35,16 @@
                         <h2 th:text="'ФИО: ' + ${instructor.name}">ФИО</h2>
                         <h4 th:text="'Сертификат: ' + ${instructor.certificate}">Сертификат</h4>
                         <h4 th:text="'Фото: ' + ${instructor.photoUrl}">Фото</h4>
-                        <h4 th:text="'Удален: ' +  ${instructor.isDeleted}">Фото</h4>
+                        <h4 th:text="'Уволен: ' +  ${instructor.isDeleted}">true</h4>
                         <div class="mt-2">
                             <a class="btn btn-secondary"
-                               th:href="@{/instructors/{id}(id=${instructor.id})}">Подробнее</a>
+                               th:href="@{/instructors/{id}(id=${instructor.id})}"
+                               th:if="${!instructor.isDeleted}"
+                            >Подробнее</a>
                             <a class="btn btn-primary"
-                               th:href="@{/instructors/{id}/edit(id=${instructor.id})}">Редактировать</a>
+                               th:href="@{/instructors/{id}/edit(id=${instructor.id})}"
+                               th:if="${!instructor.isDeleted}"
+                            >Редактировать</a>
                             <a class="btn btn-danger"
                                th:href="@{/instructors/{id}/delete(id=${instructor.id})}"
                                th:if="${!instructor.isDeleted}"

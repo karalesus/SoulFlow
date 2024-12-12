@@ -11,7 +11,7 @@
                 <div class="justify-content-center">
                     <h1>Оставить отзыв на занятие</h1>
                 </div>
-                <form th:action="@{/user/profile/{userId}/add/{sessionId}(userId=${userId}, sessionId=${sessionId})}"
+                <form th:action="@{/user/profile/add/{sessionId}(sessionId=${sessionId})}"
                       th:method="post"
                       th:object="${form}"
                       class="m-md-auto w-50 pb-3">

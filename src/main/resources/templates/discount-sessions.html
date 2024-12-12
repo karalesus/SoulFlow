@@ -8,6 +8,10 @@
 
     <h2 class="text-center mb-4">Посетите занятия со скидками!</h2>
 
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}"></span>
+    </div>
+
         <form th:action="@{/schedule/discounts}"
               th:method="get"
               th:object="${form}"
@@ -23,8 +27,8 @@
                 <div class="card-body">
                     <h5 class="card-title" th:text="${sessions.name}">Название</h5>
                     <p class="card-text"><span th:text="${sessions.description}">Описание</span></p>
-                    <p class="card-text"><span
-                            th:text="'Длительность: ' + ${sessions.duration} + ' минут'">Длительность</span></p>
+                    <p class="card-text"><strong>Длительность: </strong><span
+                            th:text="${sessions.duration}">Длительность</span> минут</p>
                     <p class="card-text"><strong>Дата и время: </strong><span th:text="${#temporals.format(sessions.dateTime, 'dd MMMM yyyy, HH:mm', new java.util.Locale('ru', 'RU'))}">
                             Дата и время
                         </span>
@@ -32,10 +36,14 @@
                     </p>
                     <p class="card-text"><strong>Сложность: </strong><span th:text="${sessions.difficulty}">Сложность</span></p>
                     <p class="card-text"><strong>Тип: </strong><span th:text="${sessions.type}">Тип</span></p>
-                    <p class="card-text"><strong>Инстркутор: </strong><span th:text="${sessions.instructorName}">Инструктор</span>
+                    <p class="card-text"><strong>Инструктор: </strong><span th:text="${sessions.instructorName}">Инструктор</span>
                     </p>
-                    <p class="card-text"><strong>Цена до скидки: </strong><del th:text="${#numbers.formatDecimal(sessions.priceBeforeDiscount, 2, 0)}">Цена до скидки</del> рублей</p>
-                    <p class="card-text"><strong>Цена после скидки: </strong><span th:text="${#numbers.formatDecimal(sessions.priceAfterDiscount, 2, 0)}">Цена после скидки</span> рублей</p>
+                    <p th:if="${sessions.priceAfterDiscount != 0}" class="card-text">
+                        <strong>Цена до скидки: </strong><del th:text="${#numbers.formatDecimal(sessions.priceBeforeDiscount, 2, 0)}">Цена до скидки</del> рублей</p>
+                    <p th:if="${sessions.priceAfterDiscount != 0}" class="card-text">
+                        <strong>Цена после скидки: </strong><span th:text="${#numbers.formatDecimal(sessions.priceAfterDiscount, 2, 0)}">Цена после скидки</span> рублей</p>
+                    <p th:if="${sessions.priceAfterDiscount == 0}" class="card-text">
+                        <strong>Цена: </strong><span th:text="${#numbers.formatDecimal(sessions.priceBeforeDiscount, 2, 0)}">Цена до скидки</span> рублей</p>
                     </div>
                     <div class="card-footer bg-transparent border-0 text-center">
                         <form th:action="@{/schedule/register/{sessionId}(sessionId=${sessions.id})}" method="post">

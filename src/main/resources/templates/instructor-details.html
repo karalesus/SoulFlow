@@ -12,13 +12,16 @@
                     <h1>Информация об инструкторе</h1>
                 </div>
                 <div class="row bg-light rounded">
-                        <h2>Инструктор</h2>
                         <h4 th:text="'ID: ' + ${model.instructor.id}"></h4>
                         <h4 th:text="'ФИО: ' + ${model.instructor.name}"></h4>
                         <h4 th:text="'Сертификат: ' + ${model.instructor.certificate}"></h4>
                         <h4 th:text="'Фото: ' + ${model.instructor.photoUrl}"></h4>
-                        <div class="align-bottom"><a class="btn btn-danger align-bottom"
-                                                     th:href="@{/instructors/{id}/delete(id=${model.instructor.id})}">Удалить инструктора</a>
+                        <h4 th:text="'Уволен: ' + ${model.instructor.isDeleted}"></h4>
+                        <div class="align-bottom">
+                            <a class="btn btn-danger align-bottom"
+                               th:href="@{/instructors/{id}/delete(id=${model.instructor.id})}"
+                               th:if="${!model.instructor.isDeleted}"
+                               onclick="return confirm('Вы уверены, что хотите уволить этого инструктора?');">Уволить</a>
                         </div>
                 </div>
             </main>

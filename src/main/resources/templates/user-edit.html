@@ -11,7 +11,7 @@
                 <div class="justify-content-center">
                     <h1>Редактировать профиль пользователя</h1>
                 </div>
-                <form th:action="@{/user/profile/{id}/edit(id=${form.id})}"
+                <form th:action="@{/user/profile/edit}"
                       th:method="post"
                       th:object="${form}"
                       class="m-md-auto w-50 pb-3">
@@ -21,7 +21,6 @@
                            class="form-control text-center"
                            id="id"/>
 
-                    <!-- Поле для имени пользователя -->
                     <div class="mb-3">
                         <label class="form-label" for="name">Имя</label>
                         <input th:field="*{name}"
@@ -34,7 +33,6 @@
                                class="text-danger">Ошибка в имени</small>
                     </div>
 
-                    <!-- Поле для email -->
                     <div class="mb-3">
                         <label class="form-label" for="email">Email</label>
                         <input th:field="*{email}"
@@ -47,7 +45,6 @@
                                class="text-danger">Ошибка в email</small>
                     </div>
 
-                    <!-- Поле для текущего пароля -->
                     <div class="mb-3">
                         <label class="form-label" for="currentPassword">Текущий пароль</label>
                         <input th:field="*{currentPassword}"
@@ -60,7 +57,6 @@
                                class="text-danger">Ошибка в текущем пароле</small>
                     </div>
 
-                    <!-- Поле для нового пароля -->
                     <div class="mb-3">
                         <label class="form-label" for="newPassword">Новый пароль</label>
                         <input th:field="*{newPassword}"
@@ -73,7 +69,6 @@
                                class="text-danger">Ошибка в новом пароле</small>
                     </div>
 
-                    <!-- Поле для подтверждения нового пароля -->
                     <div class="mb-3">
                         <label class="form-label" for="confirmNewPassword">Подтверждение нового пароля</label>
                         <input th:field="*{confirmNewPassword}"
