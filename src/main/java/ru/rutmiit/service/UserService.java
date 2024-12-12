@@ -1,7 +1,7 @@
 package ru.rutmiit.service;
 
-import ru.rutmiit.dto.EditUserDTO;
-import ru.rutmiit.dto.UserDTO;
+import ru.rutmiit.dto.user.EditUserDTO;
+import ru.rutmiit.dto.user.UserDTO;
 
 import java.util.List;
 import java.util.UUID;

@@ -13,16 +13,13 @@ import java.util.stream.Collectors;
 public class DifficultyServiceImpl implements DifficultyService {
 
     private DifficultyRepositoryImpl difficultyRepository;
-
-
     @Autowired
     public void setDifficultyRepository(DifficultyRepositoryImpl difficultyRepository) {
         this.difficultyRepository = difficultyRepository;
     }
 
-
     @Override
-    public List<String> getAllDifficulties() {
+    public List<String> getAllDifficultiesByName() {
         return difficultyRepository.findAll().stream().map(Difficulty::getName).collect(Collectors.toList());
     }
 }

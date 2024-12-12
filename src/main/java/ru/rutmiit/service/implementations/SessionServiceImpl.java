@@ -1,17 +1,15 @@
 package ru.rutmiit.service.implementations;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import ru.rutmiit.dto.Session.DiscountSessionOutputDTO;
-import ru.rutmiit.dto.Session.SessionOutputDTO;
-import ru.rutmiit.dto.Session.UpcomingSessionOutputDTO;
+import ru.rutmiit.dto.session.ScheduleSessionsOutputDTO;
+import ru.rutmiit.dto.session.SessionOutputDTO;
 import ru.rutmiit.models.*;
-import ru.rutmiit.dto.Session.SessionInputDTO;
+import ru.rutmiit.dto.session.SessionInputDTO;
 import ru.rutmiit.exceptions.difficulty.DifficultyNotFoundException;
 import ru.rutmiit.exceptions.instructor.InstructorNotFoundException;
 import ru.rutmiit.exceptions.session.InvalidSessionDataException;
@@ -19,7 +17,6 @@ import ru.rutmiit.exceptions.session.SessionNotFoundException;
 import ru.rutmiit.exceptions.type.TypeNotFoundException;
 import ru.rutmiit.repositories.implementations.*;
 import ru.rutmiit.service.SessionService;
-import ru.rutmiit.utils.modelMapper.Mapper;
 import ru.rutmiit.utils.validation.ValidationUtil;
 
 
@@ -31,8 +28,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class SessionServiceImpl implements SessionService {
-
-    private final Mapper mapper;
     private final ModelMapper modelMapper;
     private final ValidationUtil validationUtil;
     private SessionRepositoryImpl sessionRepository;
@@ -41,10 +36,10 @@ public class SessionServiceImpl implements SessionService {
     private TypeRepositoryImpl typeRepository;
     private InstructorRepositoryImpl instructorRepository;
     private ReviewRepositoryImpl reviewRepository;
+    private DiscountServiceImpl discountService;
 
     @Autowired
-    public SessionServiceImpl(Mapper mapper, ModelMapper modelMapper, ValidationUtil validationUtil) {
-        this.mapper = mapper;
+    public SessionServiceImpl(ModelMapper modelMapper, ValidationUtil validationUtil) {
         this.modelMapper = modelMapper;
         this.validationUtil = validationUtil;
     }
@@ -74,6 +69,10 @@ public class SessionServiceImpl implements SessionService {
         this.sessionRegistrationService = sessionRegistrationService;
     }
 
+    @Autowired
+    public void setDiscountService(DiscountServiceImpl discountService) {
+        this.discountService = discountService;
+    }
 
     @Autowired
     public void setReviewRepository(ReviewRepositoryImpl reviewRepository) {
@@ -81,22 +80,17 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    @Transactional
     public String addSession(SessionInputDTO sessionInputDTO) {
-        // TODO: добавление занятия возможно только для админа
         validateSession(sessionInputDTO, "Некорректные данные для добавления занятия");
-
+        Session session = convertSessionDtoToSession(sessionInputDTO);
         Difficulty difficulty = difficultyRepository.findByName(sessionInputDTO.getDifficulty())
                 .orElseThrow(() -> new DifficultyNotFoundException("Сложность не найдена"));
         Type type = typeRepository.findByName(sessionInputDTO.getType())
                 .orElseThrow(() -> new TypeNotFoundException("Тип не найден"));
-        Instructor instructor = instructorRepository.findByName(sessionInputDTO.getInstructor())
+        Instructor instructor = instructorRepository.findById(UUID.fromString(sessionInputDTO.getInstructor()))
                 .orElseThrow(() -> new InstructorNotFoundException("Инструктор не найден"));
 
-        if (instructor.isDeleted()) {
-            throw new InstructorNotFoundException("Инструктор уволен и не может быть прикреплён к занятию");
-        }
-
-        Session session = convertSessionDtoToSession(sessionInputDTO);
         session.setDifficulty(difficulty);
         session.setType(type);
         session.setInstructor(instructor);
@@ -118,16 +112,17 @@ public class SessionServiceImpl implements SessionService {
 
     @Override
     public Page<SessionOutputDTO> getAllSessionsWithPagination(String searchTerm, int page, int size) {
-        int offset = (page - 1) * size;
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("title"));
         String term = searchTerm != null ? searchTerm : "";
-        List<Session> sessionPage = sessionRepository.findAllWithPagination(term, offset, size);
+        List<Session> sessionPage = sessionRepository.findAllWithPagination(term, pageable);
 
         long totalSessions = sessionRepository.countSessions(searchTerm);
         List<SessionOutputDTO> sessionDTOs = sessionPage.stream()
-                .map(session -> new SessionOutputDTO(session.getId().toString(), session.getName(), session.getDuration(), session.getDescription(), session.getDateTime(), session.getMaxCapacity(), session.getPrice(), session.getDifficulty().getName(), session.getType().getName(), session.getInstructor().getName()))
+                .map(session ->
+                        new SessionOutputDTO(session.getId().toString(), session.getName(), session.getDuration(), session.getDescription(), session.getDateTime(), session.getMaxCapacity(), session.getPrice(), session.getDifficulty().getName(), session.getType().getName(), session.getInstructor().getName()))
                 .toList();
 
-        return new PageImpl<>(sessionDTOs, PageRequest.of(page - 1, size), totalSessions);
+        return new PageImpl<>(sessionDTOs, pageable, totalSessions);
     }
 
 
@@ -172,65 +167,51 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public List<UpcomingSessionOutputDTO> getUpcomingSessions(LocalDateTime now) {
-        List<UpcomingSessionOutputDTO> upcomingSessions = sessionRepository
-                .getUpcomingSessions(now).stream().map(session -> {
-                    UpcomingSessionOutputDTO upcomingSessionOutputDTO
+    public List<ScheduleSessionsOutputDTO> getUpcomingSessions(LocalDateTime now) {
+        List<Session> upcomingSessions = sessionRepository.getUpcomingSessions(now);
+
+        return upcomingSessions.stream().map(session -> {
+                    ScheduleSessionsOutputDTO upcomingSessionOutputDTO
                             = convertSessionToUpcomingSessionOutputDto(session);
                     upcomingSessionOutputDTO
                             .setAvailableSpots(sessionRegistrationService.getAvailableSpots(session.getId().toString(), session.getMaxCapacity()));
+                    upcomingSessionOutputDTO.setPriceBeforeDiscount(session.getPrice());
+
+                    BigDecimal discountedPrice = calculateDiscountedPrice(session.getId());
+                    if (discountedPrice.compareTo(session.getPrice()) < 0) {
+                        upcomingSessionOutputDTO.setPriceAfterDiscount(discountedPrice);
+                    } else {
+                        upcomingSessionOutputDTO.setPriceAfterDiscount(BigDecimal.ZERO);
+                    }
                     return upcomingSessionOutputDTO;
                 }).collect(Collectors.toList());
-
-        return upcomingSessions;
     }
 
     @Override
-    public List<DiscountSessionOutputDTO> getDiscountSessions(LocalDateTime now) {
+    public List<ScheduleSessionsOutputDTO> getDiscountSessions(LocalDateTime now) {
         List<Session> upcomingSessions = sessionRepository.getUpcomingSessions(now);
 
-        List<DiscountSessionOutputDTO> discountSessionsDTO = upcomingSessions.stream()
+        return upcomingSessions.stream()
                 .filter(session -> {
-                    BigDecimal instructorRating =
-                            reviewRepository.getRatingByInstructor(session.getInstructor().getId());
-                    BigDecimal discount = calculateDiscount(instructorRating);
-                    return discount.compareTo(BigDecimal.ZERO) > 0;
+                    BigDecimal discountedPrice = calculateDiscountedPrice(session.getId());
+                    return discountedPrice.compareTo(session.getPrice()) < 0;
                 })
                 .map(session -> {
-                    BigDecimal instructorRating = reviewRepository.getRatingByInstructor(session.getInstructor().getId());
-                    BigDecimal discount = calculateDiscount(instructorRating);
-                    BigDecimal discountedPrice = calculateDiscountedPrice(session.getPrice(), discount);
-
-                    DiscountSessionOutputDTO sessionDTO = convertSessionToDiscountSessionOutputDto(session);
-                    sessionDTO.setAvailableSpots(sessionRegistrationService.getAvailableSpots(session.getId().toString(), session.getMaxCapacity()));
+                    BigDecimal discountedPrice = calculateDiscountedPrice(session.getId());
+                    ScheduleSessionsOutputDTO sessionDTO = convertSessionToDiscountSessionOutputDto(session);
                     sessionDTO.setPriceBeforeDiscount(session.getPrice());
                     sessionDTO.setPriceAfterDiscount(discountedPrice);
-
+                    sessionDTO.setAvailableSpots(sessionRegistrationService.getAvailableSpots(session.getId().toString(), session.getMaxCapacity()));
                     return sessionDTO;
                 })
                 .collect(Collectors.toList());
-
-        return discountSessionsDTO;
     }
 
-    private BigDecimal calculateDiscount(BigDecimal instructorRating) {
-        if (instructorRating.compareTo(BigDecimal.valueOf(4.0)) <= 0) {
-            // Если рейтинг меньше или равнo 4, скидка 30%
-            return BigDecimal.valueOf(0.30);
-        } else if (instructorRating.compareTo(BigDecimal.valueOf(4.3)) < 0) {
-            // Если рейтинг меньше 4.3, скидка 10%
-            return BigDecimal.valueOf(0.10);
-        } else {
-            return BigDecimal.ZERO;
-        }
-    }
+    public BigDecimal calculateDiscountedPrice(UUID sessionId) {
+        Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new SessionNotFoundException("Занятие не найдено"));
 
-    private BigDecimal calculateDiscountedPrice(BigDecimal originalPrice, BigDecimal discount) {
-        if (discount.compareTo(BigDecimal.ZERO) > 0) {
-            return originalPrice.subtract(originalPrice.multiply(discount));
-        } else {
-            return originalPrice;
-        }
+        BigDecimal discount = discountService.calculateDiscount(session.getInstructor().getId());
+        return discountService.calculateDiscountedPrice(session.getPrice(), discount);
     }
 
     private void validateSession(SessionInputDTO sessionInputDTO, String exceptionMessage) {
@@ -245,16 +226,16 @@ public class SessionServiceImpl implements SessionService {
         }
     }
 
-    public DiscountSessionOutputDTO convertSessionToDiscountSessionOutputDto(Session session) {
-        return modelMapper.map(session, DiscountSessionOutputDTO.class);
+    public ScheduleSessionsOutputDTO convertSessionToDiscountSessionOutputDto(Session session) {
+        return modelMapper.map(session, ScheduleSessionsOutputDTO.class);
     }
 
     public SessionOutputDTO convertSessionToSessionOutputDto(Session session) {
         return modelMapper.map(session, SessionOutputDTO.class);
     }
 
-    public UpcomingSessionOutputDTO convertSessionToUpcomingSessionOutputDto(Session session) {
-        return modelMapper.map(session, UpcomingSessionOutputDTO.class);
+    public ScheduleSessionsOutputDTO convertSessionToUpcomingSessionOutputDto(Session session) {
+        return modelMapper.map(session, ScheduleSessionsOutputDTO.class);
     }
 
     public Session convertSessionDtoToSession(SessionInputDTO sessionInputDTO) {

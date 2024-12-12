@@ -1,24 +1,23 @@
 package ru.rutmiit.service.implementations;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ru.rutmiit.dto.EditUserDTO;
-import ru.rutmiit.models.Role;
+import ru.rutmiit.dto.user.EditUserDTO;
+import ru.rutmiit.exceptions.user.*;
 import ru.rutmiit.models.User;
-import ru.rutmiit.dto.UserDTO;
+import ru.rutmiit.dto.user.UserDTO;
 import ru.rutmiit.exceptions.session.InvalidSessionDataException;
-import ru.rutmiit.exceptions.user.InvalidEmailException;
-import ru.rutmiit.exceptions.user.InvalidUserDataException;
-import ru.rutmiit.exceptions.user.UserNotFoundException;
+import ru.rutmiit.models.UserRoles;
 import ru.rutmiit.repositories.implementations.RoleRepositoryImpl;
 import ru.rutmiit.repositories.implementations.UserRepositoryImpl;
 import ru.rutmiit.service.UserService;
-import ru.rutmiit.utils.modelMapper.Mapper;
 import ru.rutmiit.utils.validation.ValidationUtil;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,14 +25,20 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private ValidationUtil validationUtil;
-    private final Mapper mapper;
+    private final ModelMapper modelMapper;
     private RoleRepositoryImpl roleRepository;
     private UserRepositoryImpl userRepository;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(Mapper mapper, ValidationUtil validationUtil) {
-        this.mapper = mapper;
+    public UserServiceImpl(ValidationUtil validationUtil, ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
         this.validationUtil = validationUtil;
+    }
+
+    @Autowired
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Autowired
@@ -47,6 +52,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public String register(UserDTO userDTO) {
         if (!this.validationUtil.isValid(userDTO)) {
 
@@ -58,23 +64,29 @@ public class UserServiceImpl implements UserService {
             throw new InvalidSessionDataException("Некорректные данные пользователя при регистрации");
         }
 
+
         boolean existsByEmail = userRepository.existsByEmail(userDTO.getEmail());
 
         if (existsByEmail) {
             throw new InvalidEmailException("Пользователь с таким email существует");
         }
 
-        Optional<Role> role = roleRepository.findByName("MEMBER");
-        Role userRole = role.orElseThrow();
+        var userRole = roleRepository.
+                findRoleByName(UserRoles.MEMBER).orElseThrow();
 
-        User user = mapper.convertUserDtoToUser(userDTO);
-        user.setRole(List.of(userRole));
+
+        User user = new User(
+                userDTO.getName(),
+                userDTO.getEmail(),
+                passwordEncoder.encode(userDTO.getPassword())
+        );
+        user.setRoles(List.of(userRole));
         return userRepository.save(user).getId().toString();
     }
 
     @Override
     public List<UserDTO> getAllUsers() {
-        List<UserDTO> usersList = userRepository.findAll().stream().map(mapper::convertUserToUserDto).collect(Collectors.toList());
+        List<UserDTO> usersList = userRepository.findAll().stream().map(this::convertUserToUserDto).collect(Collectors.toList());
         if (usersList.isEmpty()) {
             throw new UserNotFoundException("Пользователей не найдено");
         } else {
@@ -89,17 +101,22 @@ public class UserServiceImpl implements UserService {
                 new InvalidEmailException("Пользователь с sessionId " + userDTO.getId() + " не найден.")
         );
 
-//        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-//            throw new
-//        }
+        if (!passwordEncoder.matches(userDTO.getCurrentPassword(), user.getPassword())) {
+            throw new InvalidPasswordException("Текущий пароль указан неверно!");
+        }
+
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
 
-//        if (!newPassword.isBlank()) {
-//            user.setPassword(passwordEncoder.encode(newPassword));
-//        }
+        if (!userDTO.getNewPassword().isEmpty() ) {
+            if (!userDTO.getConfirmNewPassword().equals(userDTO.getNewPassword())) {
+                throw new PasswordsNotMatchException("Пароли не совпадают");
+            }
+            user.setPassword(passwordEncoder.encode(userDTO.getNewPassword()));
+        }
+
         this.userRepository.save(user);
-        return mapper.convertEditUserToUserDto(user);
+        return convertEditUserToUserDto(user);
     }
 
     @Override
@@ -110,8 +127,13 @@ public class UserServiceImpl implements UserService {
 
         return userRepository
                 .findById(uuid)
-                .map(mapper::convertUserToUserDto)
+                .map(this::convertUserToUserDto)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+    }
+
+    public User getUser(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email + " не найден"));
     }
 
     private void validateUser(EditUserDTO userDTO, String exceptionMessage) {
@@ -125,4 +147,18 @@ public class UserServiceImpl implements UserService {
             throw new InvalidSessionDataException(exceptionMessage);
         }
     }
+
+    public User convertUserDtoToUser(UserDTO userDTO) {
+        return modelMapper.map(userDTO, User.class);
+    }
+
+    public UserDTO convertUserToUserDto(User user) {
+        return modelMapper.map(user, UserDTO.class);
+    }
+
+    public EditUserDTO convertEditUserToUserDto(User user) {
+        return modelMapper.map(user, EditUserDTO.class);
+    }
+
+
 }

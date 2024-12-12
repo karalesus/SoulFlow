@@ -1,28 +1,24 @@
 package ru.rutmiit.service.implementations;
 
-import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.rutmiit.dto.Session.AttendedSessionsDTO;
-import ru.rutmiit.dto.Session.RegisteredSessionsDTO;
+import ru.rutmiit.dto.session.AttendedSessionsDTO;
+import ru.rutmiit.dto.session.ScheduleSessionsOutputDTO;
 import ru.rutmiit.exceptions.sessionRegistration.AlreadyRegisteredException;
 import ru.rutmiit.exceptions.sessionRegistration.NoAvailableSpotsException;
 import ru.rutmiit.exceptions.sessionRegistration.SessionRegistrationsNotFound;
 import ru.rutmiit.models.*;
 import ru.rutmiit.models.compositeKeys.MemberSessionKeys;
-import ru.rutmiit.dto.SessionRegistrationDTO;
+import ru.rutmiit.dto.sessionRegistration.SessionRegistrationDTO;
 import ru.rutmiit.exceptions.status.StatusNotFoundException;
 import ru.rutmiit.exceptions.session.SessionNotFoundException;
 import ru.rutmiit.exceptions.user.UserNotFoundException;
-import ru.rutmiit.repositories.implementations.SessionRegistrationRepositoryImpl;
-import ru.rutmiit.repositories.implementations.SessionRepositoryImpl;
-import ru.rutmiit.repositories.implementations.StatusRepositoryImpl;
-import ru.rutmiit.repositories.implementations.UserRepositoryImpl;
+import ru.rutmiit.repositories.implementations.*;
 import ru.rutmiit.service.SessionRegistrationService;
-import ru.rutmiit.utils.modelMapper.Mapper;
 import ru.rutmiit.utils.validation.ValidationUtil;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +34,8 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
     private StatusRepositoryImpl statusRepository;
     private SessionRepositoryImpl sessionRepository;
     private UserRepositoryImpl userRepository;
+    private ReviewRepositoryImpl reviewRepository;
+    private DiscountServiceImpl discountService;
 
     @Autowired
     public SessionRegistrationServiceImpl(ValidationUtil validationUtil, ModelMapper modelMapper) {
@@ -61,18 +59,28 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
     }
 
     @Autowired
+    public void setReviewRepository(ReviewRepositoryImpl reviewRepository) {
+        this.reviewRepository = reviewRepository;
+    }
+
+    @Autowired
+    public void setDiscountService(DiscountServiceImpl discountService) {
+        this.discountService = discountService;
+    }
+
+    @Autowired
     public void setUserRepository(UserRepositoryImpl userRepository) {
         this.userRepository = userRepository;
     }
 
     @Override
-    public void addSessionRegistration(SessionRegistrationDTO sessionRegistrationDTO) {
-        // TODO: это действие возможно только со стороны авторизованного пользователя
+    public String addSessionRegistration(SessionRegistrationDTO sessionRegistrationDTO) {
         UUID sessionId = sessionRegistrationDTO.getSessionId();
         UUID memberId = sessionRegistrationDTO.getMemberId();
         Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new SessionNotFoundException("Занятие не найдено"));
         User member = userRepository.findById(memberId).orElseThrow(() -> new UserNotFoundException("Участник не найден"));
-        Status status = statusRepository.findByName("Записан").orElseThrow(() -> new StatusNotFoundException("Статуса не существует"));
+        Status registeredStatus = statusRepository.findByName("Записан").orElseThrow(() -> new StatusNotFoundException("Статуса не существует"));
+        Status cancelledStatus = statusRepository.findByName("Отменено").orElseThrow(() -> new StatusNotFoundException("Статуса не существует"));
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -83,37 +91,56 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
             throw new NoAvailableSpotsException("Все места на занятие заняты!");
         }
 
-        Optional<String> existingRegistrationOpt = sessionRegistrationRepository.getStatusBySessionIdAndUserId(sessionId, memberId);
+        BigDecimal discountPrice = discountService.calculateDiscountedPrice(session.getPrice(), discountService.calculateDiscount(session.getInstructor().getId()));
+
+        BigDecimal finalPrice;
+        if (discountPrice.compareTo(session.getPrice()) < 0) {
+            finalPrice = discountPrice;
+        } else{
+            finalPrice = session.getPrice();
+        }
+
+        return handleRegistration(sessionRegistrationDTO, session, member, registeredStatus, cancelledStatus, finalPrice);
+    }
+
+
+    private String handleRegistration(SessionRegistrationDTO sessionRegistrationDTO, Session session, User member, Status registeredStatus, Status cancelledStatus, BigDecimal finalPrice) {
+        MemberSessionKeys memberSessionKeys = new MemberSessionKeys(member, session);
+        SessionRegistration sessionRegistration = convertRegistrationDtoToRegistration(sessionRegistrationDTO);
+
+        Optional<String> existingRegistrationOpt = sessionRegistrationRepository.getStatusBySessionIdAndUserId(session.getId(), member.getId());
         if (existingRegistrationOpt.isPresent()) {
             String existingRegistration = existingRegistrationOpt.get();
-            if (existingRegistration.equals(status.getName())) {
+
+            if (existingRegistration.equals(registeredStatus.getName())) {
                 throw new AlreadyRegisteredException("Вы уже зарегистрированы на это занятие!");
+            }
+
+            if (existingRegistration.equals(cancelledStatus.getName())) {
+                sessionRegistration.setStatus(registeredStatus);
+                sessionRegistration.setRegistrationDate(LocalDateTime.now());
+                sessionRegistration.setFinalPrice(finalPrice);
+                sessionRegistrationRepository.update(sessionRegistration);
+                return sessionRegistration.getId().toString();
             }
         }
 
-        MemberSessionKeys memberSessionKeys = new MemberSessionKeys(member, session);
-        SessionRegistration sessionRegistration = convertRegistrationDtoToRegistration(sessionRegistrationDTO);
         sessionRegistration.setId(memberSessionKeys);
         sessionRegistration.setRegistrationDate(LocalDateTime.now());
-        sessionRegistration.setStatus(status);
+        sessionRegistration.setStatus(registeredStatus);
+        sessionRegistration.setFinalPrice(finalPrice);
+
         sessionRegistrationRepository.save(sessionRegistration);
+
+        return sessionRegistration.getId().toString();
     }
 
-    @Override
-    public List<SessionRegistrationDTO> getAllSessionRegistrations() {
-        List<SessionRegistrationDTO> sessionRegistrationList = sessionRegistrationRepository.findAll().stream().map(this::convertRegistrationToRegistrationDto).collect(Collectors.toList());
-        if (sessionRegistrationList.isEmpty()) {
-            throw new SessionRegistrationsNotFound("Записей не найдено");
-        } else {
-            return sessionRegistrationList;
-        }
-    }
 
     @Override
     public void cancelSessionRegistration(SessionRegistrationDTO sessionRegistrationDTO) {
-        // TODO: это действие возможно только со стороны авторизованного пользователя
         UUID sessionId = sessionRegistrationDTO.getSessionId();
         UUID memberId = sessionRegistrationDTO.getMemberId();
+
         Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new SessionNotFoundException("Занятие не найдено"));
         User member = userRepository.findById(memberId).orElseThrow(() -> new UserNotFoundException("Участник не найдено"));
         Status canceledStatus = statusRepository.findByName("Отменено").orElseThrow(() -> new StatusNotFoundException("Статуса не существует"));
@@ -135,6 +162,7 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
     public void updateStatusToAttended(UUID memberId) {
         Status attendedStatus = statusRepository.findByName("Посещено").orElseThrow(() -> new StatusNotFoundException("Статуса не существует"));
         List<SessionRegistration> sessionRegistrations = sessionRegistrationRepository.getSessionRegistrationsByMember(memberId);
+
         for (SessionRegistration registration : sessionRegistrations) {
             Session session = registration.getId().getSession();
             LocalDateTime dateTime = session.getDateTime();
@@ -161,7 +189,7 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
                     AttendedSessionsDTO attendedSessionsDTO = convertRegistrationToAttendedSessionsDto(sessionRegistration);
                     attendedSessionsDTO.setName(session.getName());
                     attendedSessionsDTO.setDateTime(session.getDateTime());
-                    attendedSessionsDTO.setPrice(session.getPrice());
+                    attendedSessionsDTO.setPrice(sessionRegistration.getFinalPrice());
                     attendedSessionsDTO.setSessionId(session.getId().toString());
                     attendedSessionsDTO.setInstructorName(session.getInstructor().getName());
                     return attendedSessionsDTO;
@@ -171,22 +199,22 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
     }
 
     @Override
-    public List<RegisteredSessionsDTO> getRegisteredSessionsByUserId(UUID memberId) {
+    public List<ScheduleSessionsOutputDTO> getRegisteredSessionsByUserId(UUID memberId) {
         List<SessionRegistration> sessionRegistrations = sessionRegistrationRepository.getSessionRegistrationsByMember(memberId);
 
         Status isRegisteredStatus = statusRepository.findByName("Записан").orElseThrow(() -> new StatusNotFoundException("Статуса не существует"));
 
-        List<RegisteredSessionsDTO> sessionRegistrationDTOS = sessionRegistrations.stream()
+        List<ScheduleSessionsOutputDTO> sessionRegistrationDTOS = sessionRegistrations.stream()
                 .filter(sessionRegistration ->
                         sessionRegistration.getStatus().getName().equals(isRegisteredStatus.getName()))
                 .map(sessionRegistration -> {
                             Session session = sessionRegistration.getId().getSession();
-                            RegisteredSessionsDTO registeredSessionsDTO = convertRegistrationToRegisteredSessionsDto(sessionRegistration);
-                            registeredSessionsDTO.setSessionId(session.getId().toString());
+                    ScheduleSessionsOutputDTO registeredSessionsDTO = convertRegistrationToRegisteredSessionsDto(sessionRegistration);
+                            registeredSessionsDTO.setId(session.getId().toString());
                             registeredSessionsDTO.setDateTime(session.getDateTime());
                             registeredSessionsDTO.setName(session.getName());
                             registeredSessionsDTO.setInstructorName(session.getInstructor().getName());
-                            registeredSessionsDTO.setPrice(session.getPrice());
+                            registeredSessionsDTO.setPriceAfterDiscount(sessionRegistration.getFinalPrice());
                             return registeredSessionsDTO;
                         }
                 )
@@ -208,6 +236,16 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
         }
     }
 
+//    @Override
+//    public List<SessionRegistrationDTO> getAllSessionRegistrations() {
+//        List<SessionRegistrationDTO> sessionRegistrationList = sessionRegistrationRepository.findAll().stream().map(this::convertRegistrationToRegistrationDto).collect(Collectors.toList());
+//        if (sessionRegistrationList.isEmpty()) {
+//            throw new SessionRegistrationsNotFound("Записей не найдено");
+//        } else {
+//            return sessionRegistrationList;
+//        }
+//    }
+
     public SessionRegistration convertRegistrationDtoToRegistration(SessionRegistrationDTO sessionRegistrationDTO) {
         return modelMapper.map(sessionRegistrationDTO, SessionRegistration.class);
     }
@@ -217,8 +255,8 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
         return modelMapper.map(sessionRegistration, SessionRegistrationDTO.class);
     }
 
-    public RegisteredSessionsDTO convertRegistrationToRegisteredSessionsDto(SessionRegistration sessionRegistration) {
-        return modelMapper.map(sessionRegistration, RegisteredSessionsDTO.class);
+    public ScheduleSessionsOutputDTO convertRegistrationToRegisteredSessionsDto(SessionRegistration sessionRegistration) {
+        return modelMapper.map(sessionRegistration, ScheduleSessionsOutputDTO.class);
     }
 
     public AttendedSessionsDTO convertRegistrationToAttendedSessionsDto(SessionRegistration sessionRegistration) {

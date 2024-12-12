@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface DifficultyService {
 
-    List<String> getAllDifficulties();
+    List<String> getAllDifficultiesByName();
 }

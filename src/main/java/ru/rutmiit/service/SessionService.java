@@ -1,10 +1,9 @@
 package ru.rutmiit.service;
 
 import org.springframework.data.domain.Page;
-import ru.rutmiit.dto.Session.DiscountSessionOutputDTO;
-import ru.rutmiit.dto.Session.SessionInputDTO;
-import ru.rutmiit.dto.Session.SessionOutputDTO;
-import ru.rutmiit.dto.Session.UpcomingSessionOutputDTO;
+import ru.rutmiit.dto.session.ScheduleSessionsOutputDTO;
+import ru.rutmiit.dto.session.SessionInputDTO;
+import ru.rutmiit.dto.session.SessionOutputDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +20,6 @@ public interface SessionService {
     SessionOutputDTO editSession(String uuid, SessionInputDTO sessionInputDTO);
 
     SessionOutputDTO getSessionById(UUID uuid);
-    List<UpcomingSessionOutputDTO> getUpcomingSessions(LocalDateTime now);
-    List<DiscountSessionOutputDTO> getDiscountSessions(LocalDateTime now);
+    List<ScheduleSessionsOutputDTO> getUpcomingSessions(LocalDateTime now);
+    List<ScheduleSessionsOutputDTO> getDiscountSessions(LocalDateTime now);
 }

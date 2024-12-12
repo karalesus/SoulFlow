@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface TypeService {
 
-    List<String> getAllTypes();
+    List<String> getAllTypesByName();
 }

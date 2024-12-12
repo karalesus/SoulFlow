@@ -2,7 +2,6 @@ package ru.rutmiit.service.implementations;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.rutmiit.models.Difficulty;
 import ru.rutmiit.models.Type;
 import ru.rutmiit.repositories.implementations.TypeRepositoryImpl;
 import ru.rutmiit.service.TypeService;
@@ -23,7 +22,7 @@ public class TypeServiceImpl implements TypeService {
 
 
     @Override
-    public List<String> getAllTypes() {
+    public List<String> getAllTypesByName() {
         return typeRepository.findAll().stream().map(Type::getName).collect(Collectors.toList());
     }
 }
