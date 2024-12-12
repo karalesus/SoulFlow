@@ -17,9 +17,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.rutmiit.dto.Session.SessionInputDTO;
-import ru.rutmiit.dto.Session.SessionOutputDTO;
-import ru.rutmiit.dto.Session.UpcomingSessionOutputDTO;
+import ru.rutmiit.dto.session.SessionInputDTO;
+import ru.rutmiit.dto.session.SessionOutputDTO;
 import ru.rutmiit.service.implementations.DifficultyServiceImpl;
 import ru.rutmiit.service.implementations.InstructorServiceImpl;
 import ru.rutmiit.service.implementations.SessionServiceImpl;
@@ -34,10 +33,8 @@ import java.util.UUID;
 public class SessionControllerImpl implements SessionController {
 
     private SessionServiceImpl sessionService;
-
     private DifficultyServiceImpl difficultyService;
     private TypeServiceImpl typeService;
-
     private InstructorServiceImpl instructorService;
 
     @Autowired
@@ -68,12 +65,12 @@ public class SessionControllerImpl implements SessionController {
     public String listSessions(SessionSearchForm form, Model model) {
         var searchTerm = form.searchTerm() != null ? form.searchTerm() : "";
         var page = form.page() != null ? form.page() : 1;
-        var size = form.size() != null ? form.size() : 3;
+        var size = form.size() != null ? form.size() : 5;
         form = new SessionSearchForm(searchTerm, page, size);
 
         Page<SessionOutputDTO> sessionPage = sessionService.getAllSessionsWithPagination(searchTerm, page, size);
         var sessionViewModels = sessionPage.stream()
-                .map(s -> new SessionViewModel(s.getId().toString(), s.getName(), s.getDuration(), s.getDescription(), s.getDateTime(), s.getMaxCapacity(), s.getPrice(), s.getDifficultyName(), s.getTypeName(), s.getInstructor()))
+                .map(s -> new SessionViewModel(s.getId(), s.getName(), s.getDuration(), s.getDescription(), s.getDateTime(), s.getMaxCapacity(), s.getPrice(), s.getDifficultyName(), s.getTypeName(), s.getInstructor()))
                 .toList();
 
         var viewModel = new SessionListViewModel(
@@ -107,8 +104,8 @@ public class SessionControllerImpl implements SessionController {
         );
         model.addAttribute("model", viewModel);
         model.addAttribute("form", new AddSessionForm("", 20, "", LocalDateTime.now(), 15, new BigDecimal("500.00"), "", "", ""));
-        model.addAttribute("difficulties", difficultyService.getAllDifficulties());
-        model.addAttribute("types", typeService.getAllTypes());
+        model.addAttribute("difficulties", difficultyService.getAllDifficultiesByName());
+        model.addAttribute("types", typeService.getAllTypesByName());
         model.addAttribute("instructors", instructorService.getActiveInstructors());
         return "session-add";
     }
@@ -117,18 +114,21 @@ public class SessionControllerImpl implements SessionController {
     @PostMapping("/add")
     public String add(@Valid @ModelAttribute("form") AddSessionForm form, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
+
             var viewModel = new SessionCreateViewModel(
                     createBaseViewModel("Добавление занятия")
             );
-            model.addAttribute("model", viewModel);
+
             model.addAttribute("form", form);
-            model.addAttribute("difficulties", difficultyService.getAllDifficulties());
-            model.addAttribute("types", typeService.getAllTypes());
+            model.addAttribute("org.springframework.validation.BindingResult.AddSessionForm", bindingResult);
+            model.addAttribute("model", viewModel);
+            model.addAttribute("difficulties", difficultyService.getAllDifficultiesByName());
+            model.addAttribute("types", typeService.getAllTypesByName());
             model.addAttribute("instructors", instructorService.getActiveInstructors());
             return "session-add";
         }
 
-        var id = sessionService.addSession(new SessionInputDTO(form.name(), form.duration(), form.description(), form.dateTime(), form.maxCapacity(), form.price(), form.difficultyName(), form.typeName(), form.instructorName()));
+        var id = sessionService.addSession(new SessionInputDTO(form.name(), form.duration(), form.description(), form.dateTime(), form.maxCapacity(), form.price(), form.difficultyName(), form.typeName(), form.instructorId()));
         return "redirect:/sessions/" + id;
     }
 
@@ -141,8 +141,8 @@ public class SessionControllerImpl implements SessionController {
         );
         model.addAttribute("model", viewModel);
         model.addAttribute("form", new EditSessionForm(session.getId(), session.getName(), session.getDuration(), session.getDescription(), session.getDateTime(), session.getMaxCapacity(), session.getPrice(), session.getDifficultyName(), session.getTypeName(), session.getInstructor()));
-        model.addAttribute("difficulties", difficultyService.getAllDifficulties());
-        model.addAttribute("types", typeService.getAllTypes());
+        model.addAttribute("difficulties", difficultyService.getAllDifficultiesByName());
+        model.addAttribute("types", typeService.getAllTypesByName());
         model.addAttribute("instructors", instructorService.getActiveInstructors());
         return "session-edit";
     }
@@ -156,8 +156,8 @@ public class SessionControllerImpl implements SessionController {
             );
             model.addAttribute("model", viewModel);
             model.addAttribute("form", form);
-            model.addAttribute("difficulties", difficultyService.getAllDifficulties());
-            model.addAttribute("types", typeService.getAllTypes());
+            model.addAttribute("difficulties", difficultyService.getAllDifficultiesByName());
+            model.addAttribute("types", typeService.getAllTypesByName());
             model.addAttribute("instructors", instructorService.getActiveInstructors());
             return "session-edit";
         }

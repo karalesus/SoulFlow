@@ -13,20 +13,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import ru.rutmiit.dto.SessionRegistrationDTO;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import ru.rutmiit.dto.sessionRegistration.SessionRegistrationDTO;
+import ru.rutmiit.models.User;
 import ru.rutmiit.service.implementations.SessionRegistrationServiceImpl;
 import ru.rutmiit.service.implementations.SessionServiceImpl;
+import ru.rutmiit.service.implementations.UserServiceImpl;
 
+import java.math.BigDecimal;
+import java.security.Principal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Controller
 @RequestMapping("/schedule")
 public class ScheduleControllerImpl implements ScheduleController {
-
     private SessionServiceImpl sessionService;
     private SessionRegistrationServiceImpl sessionRegistrationService;
+    private UserServiceImpl userService;
 
     @Autowired
     public void setSessionService(SessionServiceImpl sessionService) {
@@ -36,6 +40,11 @@ public class ScheduleControllerImpl implements ScheduleController {
     @Autowired
     public void setSessionRegistrationService(SessionRegistrationServiceImpl sessionRegistrationService) {
         this.sessionRegistrationService = sessionRegistrationService;
+    }
+
+    @Autowired
+    public void setUserService(UserServiceImpl userService) {
+        this.userService = userService;
     }
 
     @Override
@@ -48,7 +57,7 @@ public class ScheduleControllerImpl implements ScheduleController {
     public String listUpcomingSessions(Model model) {
         var upcomingSessions = sessionService.getUpcomingSessions(LocalDateTime.now());
         var upcomingSessionsViewModels = upcomingSessions.stream()
-                .map(s -> new UpcomingSessionsViewModel(s.getId(), s.getName(), s.getDuration(), s.getDescription(), s.getDateTime(), s.getAvailableSpots(), s.getPrice(), s.getDifficulty(), s.getType(), s.getInstructorName()))
+                .map(s -> new UpcomingSessionsViewModel(s.getId(), s.getName(), s.getDuration(), s.getDescription(), s.getDateTime(), s.getAvailableSpots(), s.getPriceBeforeDiscount(), s.getPriceAfterDiscount(), s.getDifficulty(), s.getType(), s.getInstructorName()))
                 .toList();
         var viewModel = new UpcomingSessionsListViewModel(
                 createBaseViewModel("Ближайшие занятия"), upcomingSessionsViewModels
@@ -75,14 +84,14 @@ public class ScheduleControllerImpl implements ScheduleController {
 
     @Override
     @PostMapping("/register/{sessionId}")
-    public String registerToSession(@PathVariable("sessionId") String sessionId, Model model) {
-        // TODO: действие для авторизованного пользователя!
-//        User currentUser = getCurrentUser();
-        String currentUser = "fcf0cf65-b8ec-4a50-8150-16aa96c0aef1";
+    public String registerToSession(Principal principal, @PathVariable("sessionId") String sessionId, RedirectAttributes redirectAttributes) {
+        String email = principal.getName();
+        User user = userService.getUser(email);
 
-        SessionRegistrationDTO sessionRegistrationDTO = new SessionRegistrationDTO(UUID.fromString(currentUser), UUID.fromString(sessionId));
+        SessionRegistrationDTO sessionRegistrationDTO = new SessionRegistrationDTO(user.getId(), UUID.fromString(sessionId), BigDecimal.ZERO);
         sessionRegistrationService.addSessionRegistration(sessionRegistrationDTO);
 
+        redirectAttributes.addFlashAttribute("successMessage", "Вы успешно зарегистрировались на занятие!");
         return "redirect:/schedule/upcoming";
     }
 }

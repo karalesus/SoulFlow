@@ -14,13 +14,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.rutmiit.dto.EditUserDTO;
-import ru.rutmiit.dto.Review.ReviewInputDTO;
-import ru.rutmiit.dto.SessionRegistrationDTO;
+import ru.rutmiit.dto.user.EditUserDTO;
+import ru.rutmiit.dto.review.ReviewInputDTO;
+import ru.rutmiit.dto.sessionRegistration.SessionRegistrationDTO;
+import ru.rutmiit.models.User;
 import ru.rutmiit.service.implementations.ReviewServiceImpl;
 import ru.rutmiit.service.implementations.SessionRegistrationServiceImpl;
 import ru.rutmiit.service.implementations.UserServiceImpl;
 
+import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.UUID;
 
 @Controller
@@ -52,12 +55,13 @@ public class UserProfileControllerImpl implements UserProfileController {
     }
 
     @Override
-    @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable("id") String id, Model model) {
-        var user = userService.getUserById(UUID.fromString("776afc9b-fae8-4bb9-81d7-6a67197ff623"));
+    @GetMapping("/edit")
+    public String editForm(Principal principal, Model model) {
+        String email = principal.getName();
+        User user = userService.getUser(email);
 
         var form = new EditUserForm(
-                id, user.getName(), user.getEmail(), "", "", "");
+                user.getId().toString(), user.getName(), user.getEmail(), "", "", "");
 
         var viewModel = new UserEditViewModel(createBaseViewModel("Редактирование профиля"));
         model.addAttribute("model", viewModel);
@@ -67,8 +71,8 @@ public class UserProfileControllerImpl implements UserProfileController {
     }
 
     @Override
-    @PostMapping("/{id}/edit")
-    public String edit(@PathVariable("id") String id, @Valid @ModelAttribute("form") EditUserForm form, BindingResult bindingResult, Model model) {
+    @PostMapping("/edit")
+    public String edit(Principal principal, @Valid @ModelAttribute("form") EditUserForm form, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             var viewModel = new UserEditViewModel(createBaseViewModel("Редактирование профиля"));
             model.addAttribute("model", viewModel);
@@ -76,45 +80,35 @@ public class UserProfileControllerImpl implements UserProfileController {
             return "user-edit";
         }
 
-        if (!form.newPassword().isBlank()) {
-            if (!form.newPassword().equals(form.confirmNewPassword())) {
-               // todo: ошибка если пароли не совпадают
-                var viewModel = new UserEditViewModel(createBaseViewModel("Редактирование профиля"));
-                model.addAttribute("model", viewModel);
-                model.addAttribute("form", form);
-                return "user-edit";
-            }
-        }
+        userService.editUser(new EditUserDTO(form.id(), form.name(), form.email(), form.currentPassword(), form.newPassword(), form.confirmNewPassword()));
 
-        userService.editUser(new EditUserDTO(form.id(), form.name(), form.email(), form.currentPassword(), form.newPassword(), form.confirmNewPassword())
-        );
-
-        return "redirect:/user/profile/" + id;
+        return "redirect:/user/profile";
 
     }
 
     @Override
-    @GetMapping("/{userId}")
-    public String getUserProfile(@PathVariable("userId") String userId, Model model) {
-        var user = userService.getUserById(UUID.fromString(userId));
-        sessionRegistrationService.updateStatusToAttended(UUID.fromString(userId));
+    @GetMapping()
+    public String getUserProfile(Principal principal, Model model) {
+        String email = principal.getName();
+        User user = userService.getUser(email);
+        sessionRegistrationService.updateStatusToAttended(user.getId());
 
-        var attendedSessions = sessionRegistrationService.getAttendedSessionsByUserId(UUID.fromString(userId));
-        var registeredSessions = sessionRegistrationService.getRegisteredSessionsByUserId(UUID.fromString(userId));
+        var attendedSessions = sessionRegistrationService.getAttendedSessionsByUserId(user.getId());
+        var registeredSessions = sessionRegistrationService.getRegisteredSessionsByUserId(user.getId());
 
         var attendedSessionsViewModels = attendedSessions.stream()
                 .map(s -> {
-                    boolean hasReview = reviewService.hasUserReviewedSession(UUID.fromString(userId), UUID.fromString(s.getSessionId()));
+                    boolean hasReview = reviewService.hasUserReviewedSession(user.getId(), UUID.fromString(s.getSessionId()));
                     return new AttendedSessionsViewModel(s.getSessionId(), s.getName(), s.getDateTime(), s.getInstructorName(), s.getPrice(), hasReview);
                 })
                 .toList();
 
         var registeredSessionsViewModels = registeredSessions.stream()
-                .map(s -> new RegisteredSessionsViewModel(s.getSessionId(), s.getName(), s.getDateTime(), s.getInstructorName(), s.getPrice()))
+                .map(s -> new RegisteredSessionsViewModel(s.getId(), s.getName(), s.getDateTime(), s.getInstructorName(), s.getPriceBeforeDiscount(), s.getPriceAfterDiscount()))
                 .toList();
 
         var viewModel = new UserProfileViewModel(createBaseViewModel("Профиль"),
-                new UserViewModel(userId, user.getName(), user.getEmail()),
+                new UserViewModel(user.getId().toString(), user.getName(), user.getEmail()),
                 new RegisteredSessionsListViewModel(registeredSessionsViewModels),
                 new AttendedSessionsListViewModel(attendedSessionsViewModels));
         model.addAttribute("model", viewModel);
@@ -124,22 +118,21 @@ public class UserProfileControllerImpl implements UserProfileController {
 
 
     @Override
-    @PostMapping("/{userId}/cancel/{sessionId}")
-    public String cancelRegistration(@PathVariable("userId") String userId, @PathVariable("sessionId") String sessionId, Model model) {
-        // TODO: действие для авторизованного пользователя!
-//        User currentUser = getCurrentUser();
-        String currentUser = "7951742d-8304-4ead-8af2-4823b6621f36"; // для проверки!!!!!
+    @PostMapping("/cancel/{sessionId}")
+    public String cancelRegistration(Principal principal, @PathVariable("sessionId") String sessionId, Model model) {
+        String email = principal.getName();
+        User user = userService.getUser(email);
 
-        SessionRegistrationDTO sessionRegistrationDTO = new SessionRegistrationDTO(UUID.fromString(userId), UUID.fromString(sessionId));
+        SessionRegistrationDTO sessionRegistrationDTO = new SessionRegistrationDTO(user.getId(), UUID.fromString(sessionId), BigDecimal.ZERO);
 
         sessionRegistrationService.cancelSessionRegistration(sessionRegistrationDTO);
 
-        return "redirect:/user/profile/" + userId;
+        return "redirect:/user/profile";
     }
 
     @Override
-    @GetMapping("/{userId}/add/{sessionId}")
-    public String addReviewForm(@PathVariable("userId") String userId, @PathVariable("sessionId") String sessionId, Model model) {
+    @GetMapping("add/{sessionId}")
+    public String addReviewForm(Principal principal, @PathVariable("sessionId") String sessionId, Model model) {
         var viewModel = new SessionCreateViewModel(
                 createBaseViewModel("Добавление занятия")
         );
@@ -149,8 +142,10 @@ public class UserProfileControllerImpl implements UserProfileController {
     }
 
     @Override
-    @PostMapping("/{userId}/add/{sessionId}")
-    public String leaveReview(@PathVariable("userId") String userId, @Valid @ModelAttribute("form") AddReviewForm form, @PathVariable("sessionId") String sessionId, BindingResult bindingResult, Model model) {
+    @PostMapping("add/{sessionId}")
+    public String leaveReview(Principal principal, @Valid @ModelAttribute("form") AddReviewForm form, @PathVariable("sessionId") String sessionId, BindingResult bindingResult, Model model) {
+        String email = principal.getName();
+        User user = userService.getUser(email);
         if (bindingResult.hasErrors()) {
             var viewModel = new ReviewCreateViewModel(
                     createBaseViewModel("Добавление отзыва")
@@ -160,7 +155,7 @@ public class UserProfileControllerImpl implements UserProfileController {
             return "review-add";
         }
 
-        reviewService.addReview(new ReviewInputDTO(userId, sessionId, form.rate(), form.comment()));
-        return "redirect:/user/profile/" + userId;
+        reviewService.addReview(new ReviewInputDTO(user.getId().toString(), sessionId, form.rate(), form.comment()));
+        return "redirect:/user/profile";
     }
 }

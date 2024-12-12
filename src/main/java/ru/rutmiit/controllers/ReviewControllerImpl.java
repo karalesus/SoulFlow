@@ -1,22 +1,16 @@
 package ru.rutmiit.controllers;
 
-import jakarta.validation.Valid;
 import org.example.controllers.ReviewController;
-import org.example.input.review.AddReviewForm;
 import org.example.input.review.ReviewSearchForm;
 import org.example.viewModel.BaseViewModel;
-import org.example.viewModel.create.ReviewCreateViewModel;
-import org.example.viewModel.create.SessionCreateViewModel;
 import org.example.viewModel.home.ReviewViewModel;
 import org.example.viewModel.lists.ReviewListViewModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.rutmiit.dto.Review.ReviewInputDTO;
-import ru.rutmiit.dto.Review.ReviewOutputDTO;
+import ru.rutmiit.dto.review.ReviewOutputDTO;
 import ru.rutmiit.service.implementations.ReviewServiceImpl;
 
 @Controller

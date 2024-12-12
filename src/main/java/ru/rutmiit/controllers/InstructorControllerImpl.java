@@ -21,7 +21,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.rutmiit.dto.instructor.InstructorInputDTO;
 import ru.rutmiit.dto.instructor.InstructorOutputDTO;
-import ru.rutmiit.dto.instructor.InstructorsViewOutputDTO;
 import ru.rutmiit.service.implementations.InstructorServiceImpl;
 
 import java.util.List;
@@ -40,7 +39,7 @@ public class InstructorControllerImpl implements InstructorController {
 
     @GetMapping("/active")
     public String getInstructors(Model model) {
-        List<InstructorsViewOutputDTO> instructors = instructorService.getActiveInstructors();
+        List<InstructorOutputDTO> instructors = instructorService.getActiveInstructors();
         var instructorViewModels = instructors.stream()
                 .map(i -> new InstructorWithPhotoViewModel(i.getId(), i.getName(), i.getCertificate(), i.getPhotoUrl()))
                 .toList();
@@ -57,7 +56,7 @@ public class InstructorControllerImpl implements InstructorController {
     public String listInstructors(InstructorSearchForm form, Model model) {
         var searchTerm = form.searchTerm() != null ? form.searchTerm() : "";
         var page = form.page() != null ? form.page() : 1;
-        var size = form.size() != null ? form.size() : 3;
+        var size = form.size() != null ? form.size() : 5;
         form = new InstructorSearchForm(searchTerm, page, size);
 
         Page<InstructorOutputDTO> instructorPage = instructorService.getInstructors(searchTerm, page, size);
