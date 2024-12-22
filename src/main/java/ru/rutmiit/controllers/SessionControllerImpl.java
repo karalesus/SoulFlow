@@ -1,6 +1,9 @@
 package ru.rutmiit.controllers;
 
 import jakarta.validation.Valid;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.controllers.SessionController;
 import org.example.input.session.AddSessionForm;
 import org.example.input.session.EditSessionForm;
@@ -25,6 +28,7 @@ import ru.rutmiit.service.implementations.SessionServiceImpl;
 import ru.rutmiit.service.implementations.TypeServiceImpl;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -37,6 +41,8 @@ public class SessionControllerImpl implements SessionController {
     private TypeServiceImpl typeService;
     private InstructorServiceImpl instructorService;
 
+    private static final Logger LOG = LogManager.getLogger(Controller.class);
+
     @Autowired
     public void setSessionService(SessionServiceImpl sessionService) {
         this.sessionService = sessionService;
@@ -46,10 +52,12 @@ public class SessionControllerImpl implements SessionController {
     public void setDifficultyService(DifficultyServiceImpl difficultyService) {
         this.difficultyService = difficultyService;
     }
+
     @Autowired
     public void setTypeService(TypeServiceImpl typeService) {
         this.typeService = typeService;
     }
+
     @Autowired
     public void setInstructorService(InstructorServiceImpl instructorService) {
         this.instructorService = instructorService;
@@ -62,7 +70,8 @@ public class SessionControllerImpl implements SessionController {
 
     @Override
     @GetMapping()
-    public String listSessions(SessionSearchForm form, Model model) {
+    public String listSessions(SessionSearchForm form, Model model, Principal principal) {
+        LOG.log(Level.INFO, "Show all sessions for " + principal.getName());
         var searchTerm = form.searchTerm() != null ? form.searchTerm() : "";
         var page = form.page() != null ? form.page() : 1;
         var size = form.size() != null ? form.size() : 5;
@@ -74,7 +83,7 @@ public class SessionControllerImpl implements SessionController {
                 .toList();
 
         var viewModel = new SessionListViewModel(
-                createBaseViewModel("Список занятия"),
+                createBaseViewModel("Список занятий"),
                 sessionViewModels,
                 sessionPage.getTotalPages()
         );
@@ -86,6 +95,7 @@ public class SessionControllerImpl implements SessionController {
     @Override
     @GetMapping("/{id}")
     public String details(@PathVariable("id") String id, Model model) {
+        LOG.log(Level.INFO, "Show details for session " + id);
         var session = sessionService.getSessionById(UUID.fromString(id));
         var viewModel = new SessionDetailsViewModel(
                 createBaseViewModel("Детали занятия"),
@@ -113,6 +123,7 @@ public class SessionControllerImpl implements SessionController {
     @Override
     @PostMapping("/add")
     public String add(@Valid @ModelAttribute("form") AddSessionForm form, BindingResult bindingResult, Model model) {
+        LOG.log(Level.INFO, "Add session");
         if (bindingResult.hasErrors()) {
 
             var viewModel = new SessionCreateViewModel(
@@ -120,7 +131,6 @@ public class SessionControllerImpl implements SessionController {
             );
 
             model.addAttribute("form", form);
-            model.addAttribute("org.springframework.validation.BindingResult.AddSessionForm", bindingResult);
             model.addAttribute("model", viewModel);
             model.addAttribute("difficulties", difficultyService.getAllDifficultiesByName());
             model.addAttribute("types", typeService.getAllTypesByName());
@@ -129,6 +139,7 @@ public class SessionControllerImpl implements SessionController {
         }
 
         var id = sessionService.addSession(new SessionInputDTO(form.name(), form.duration(), form.description(), form.dateTime(), form.maxCapacity(), form.price(), form.difficultyName(), form.typeName(), form.instructorId()));
+        LOG.log(Level.INFO, "Session successfully added with id: " + id);
         return "redirect:/sessions/" + id;
     }
 
@@ -150,6 +161,7 @@ public class SessionControllerImpl implements SessionController {
     @Override
     @PostMapping("{id}/edit")
     public String edit(@PathVariable("id") String id, @Valid @ModelAttribute("form") EditSessionForm form, BindingResult bindingResult, Model model) {
+        LOG.log(Level.INFO, "Edit session with id " + id);
         if (bindingResult.hasErrors()) {
             var viewModel = new SessionEditViewModel(
                     createBaseViewModel("Редактирование занятия")

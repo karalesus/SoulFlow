@@ -1,5 +1,8 @@
 package ru.rutmiit.controllers;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.controllers.ScheduleController;
 import org.example.viewModel.BaseViewModel;
 import org.example.viewModel.home.SessionsWithDiscountsViewModel;
@@ -32,6 +35,8 @@ public class ScheduleControllerImpl implements ScheduleController {
     private SessionRegistrationServiceImpl sessionRegistrationService;
     private UserServiceImpl userService;
 
+    private static final Logger LOG = LogManager.getLogger(Controller.class);
+
     @Autowired
     public void setSessionService(SessionServiceImpl sessionService) {
         this.sessionService = sessionService;
@@ -55,6 +60,7 @@ public class ScheduleControllerImpl implements ScheduleController {
     @Override
     @GetMapping("/upcoming")
     public String listUpcomingSessions(Model model) {
+        LOG.log(Level.INFO, "Show upcoming sessions");
         var upcomingSessions = sessionService.getUpcomingSessions(LocalDateTime.now());
         var upcomingSessionsViewModels = upcomingSessions.stream()
                 .map(s -> new UpcomingSessionsViewModel(s.getId(), s.getName(), s.getDuration(), s.getDescription(), s.getDateTime(), s.getAvailableSpots(), s.getPriceBeforeDiscount(), s.getPriceAfterDiscount(), s.getDifficulty(), s.getType(), s.getInstructorName()))
@@ -69,6 +75,7 @@ public class ScheduleControllerImpl implements ScheduleController {
     @Override
     @GetMapping("/discounts")
     public String listSessionsWithDiscounts(Model model) {
+        LOG.log(Level.INFO, "Show discount sessions");
         var discountSessions = sessionService.getDiscountSessions(LocalDateTime.now());
         var discountSessionsViewModels = discountSessions.stream()
                 .map(s -> new SessionsWithDiscountsViewModel(s.getId(), s.getName(), s.getDuration(), s.getDescription(), s.getDateTime(), s.getInstructorName(), s.getType(), s.getDifficulty(), s.getAvailableSpots(), s.getPriceBeforeDiscount(), s.getPriceAfterDiscount()))
@@ -90,7 +97,7 @@ public class ScheduleControllerImpl implements ScheduleController {
 
         SessionRegistrationDTO sessionRegistrationDTO = new SessionRegistrationDTO(user.getId(), UUID.fromString(sessionId), BigDecimal.ZERO);
         sessionRegistrationService.addSessionRegistration(sessionRegistrationDTO);
-
+        LOG.log(Level.INFO, "Make registration to session for " + principal.getName());
         redirectAttributes.addFlashAttribute("successMessage", "Вы успешно зарегистрировались на занятие!");
         return "redirect:/schedule/upcoming";
     }

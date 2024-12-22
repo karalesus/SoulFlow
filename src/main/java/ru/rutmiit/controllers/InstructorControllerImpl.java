@@ -1,6 +1,9 @@
 package ru.rutmiit.controllers;
 
 import jakarta.validation.Valid;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.controllers.InstructorController;
 import org.example.input.instructor.AddInstructorForm;
 import org.example.input.instructor.EditInstructorForm;
@@ -23,6 +26,7 @@ import ru.rutmiit.dto.instructor.InstructorInputDTO;
 import ru.rutmiit.dto.instructor.InstructorOutputDTO;
 import ru.rutmiit.service.implementations.InstructorServiceImpl;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,8 +41,11 @@ public class InstructorControllerImpl implements InstructorController {
         this.instructorService = instructorService;
     }
 
+    private static final Logger LOG = LogManager.getLogger(Controller.class);
+
     @GetMapping("/active")
     public String getInstructors(Model model) {
+        LOG.log(Level.INFO, "Show active instructors");
         List<InstructorOutputDTO> instructors = instructorService.getActiveInstructors();
         var instructorViewModels = instructors.stream()
                 .map(i -> new InstructorWithPhotoViewModel(i.getId(), i.getName(), i.getCertificate(), i.getPhotoUrl()))
@@ -53,7 +60,8 @@ public class InstructorControllerImpl implements InstructorController {
 
     @Override
     @GetMapping()
-    public String listInstructors(InstructorSearchForm form, Model model) {
+    public String listInstructors(InstructorSearchForm form, Model model, Principal principal) {
+        LOG.log(Level.INFO, "Show all instructors for " + principal.getName());
         var searchTerm = form.searchTerm() != null ? form.searchTerm() : "";
         var page = form.page() != null ? form.page() : 1;
         var size = form.size() != null ? form.size() : 5;
@@ -77,6 +85,7 @@ public class InstructorControllerImpl implements InstructorController {
     @Override
     @GetMapping("/{id}")
     public String details(@PathVariable("id") String id, Model model) {
+        LOG.log(Level.INFO, "Show details for instructor " + id);
         var instructor = instructorService.getInstructorById(UUID.fromString(id));
         var viewModel = new InstructorDetailsViewModel(
                 createBaseViewModel("Детали инструктора"),
@@ -101,6 +110,7 @@ public class InstructorControllerImpl implements InstructorController {
     @Override
     @PostMapping("/add")
     public String add(@Valid @ModelAttribute("form") AddInstructorForm form, BindingResult bindingResult, Model model) {
+        LOG.log(Level.INFO, "Add instructor");
         if (bindingResult.hasErrors()) {
             var viewModel = new InstructorCreateViewModel(
                     createBaseViewModel("Добавление инструктора")
@@ -111,6 +121,7 @@ public class InstructorControllerImpl implements InstructorController {
         }
 
         var id = instructorService.addInstructor(new InstructorInputDTO(form.name(), form.certificate(), form.photoUrl()));
+        LOG.log(Level.INFO, "Instructor successfully added with id: " + id);
         return "redirect:/instructors/" + id;
     }
 
@@ -129,6 +140,7 @@ public class InstructorControllerImpl implements InstructorController {
     @Override
     @PostMapping("{id}/edit")
     public String edit(@PathVariable("id") String id, @Valid @ModelAttribute("form") EditInstructorForm form, BindingResult bindingResult, Model model) {
+        LOG.log(Level.INFO, "Edit instructor with id " + id);
         if (bindingResult.hasErrors()) {
             var viewModel = new InstructorEditViewModel(
                     createBaseViewModel("Редактирование инструктора")
@@ -145,8 +157,9 @@ public class InstructorControllerImpl implements InstructorController {
     @Override
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable("id") String id) {
+        LOG.log(Level.INFO, "Delete instructor with id " + id);
         instructorService.deleteInstructor(id);
-        return "redirect:/instructors/" + id;
+        return "redirect:/instructors/";
     }
 
     @Override

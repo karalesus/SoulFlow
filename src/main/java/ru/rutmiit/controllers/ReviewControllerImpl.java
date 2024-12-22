@@ -1,5 +1,8 @@
 package ru.rutmiit.controllers;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.controllers.ReviewController;
 import org.example.input.review.ReviewSearchForm;
 import org.example.viewModel.BaseViewModel;
@@ -24,6 +27,8 @@ public class ReviewControllerImpl implements ReviewController {
         this.reviewService = reviewService;
     }
 
+    private static final Logger LOG = LogManager.getLogger(Controller.class);
+
     @Override
     public BaseViewModel createBaseViewModel(String title) {
         return new BaseViewModel(title);
@@ -32,6 +37,7 @@ public class ReviewControllerImpl implements ReviewController {
     @Override
     @GetMapping()
     public String listReviews(ReviewSearchForm form, Model model) {
+        LOG.log(Level.INFO, "Show all reviews");
         var page = form.page() != null ? form.page() : 1;
         var size = form.size() != null ? form.size() : 3;
         form = new ReviewSearchForm(page, size);

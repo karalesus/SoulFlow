@@ -1,6 +1,9 @@
 package ru.rutmiit.controllers;
 
 import jakarta.validation.Valid;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.controllers.UserProfileController;
 import org.example.input.review.AddReviewForm;
 import org.example.input.user.EditUserForm;
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.rutmiit.dto.user.EditUserDTO;
 import ru.rutmiit.dto.review.ReviewInputDTO;
 import ru.rutmiit.dto.sessionRegistration.SessionRegistrationDTO;
+import ru.rutmiit.exceptions.user.InvalidUserDataException;
+import ru.rutmiit.exceptions.user.PasswordsNotMatchException;
 import ru.rutmiit.models.User;
 import ru.rutmiit.service.implementations.ReviewServiceImpl;
 import ru.rutmiit.service.implementations.SessionRegistrationServiceImpl;
@@ -33,6 +38,7 @@ public class UserProfileControllerImpl implements UserProfileController {
     private ReviewServiceImpl reviewService;
     private SessionRegistrationServiceImpl sessionRegistrationService;
     private UserServiceImpl userService;
+    private static final Logger LOG = LogManager.getLogger(Controller.class);
 
     @Autowired
     public void setReviewService(ReviewServiceImpl reviewService) {
@@ -61,7 +67,7 @@ public class UserProfileControllerImpl implements UserProfileController {
         User user = userService.getUser(email);
 
         var form = new EditUserForm(
-                user.getId().toString(), user.getName(), user.getEmail(), "", "", "");
+                user.getId().toString(), user.getName(), "", "", "");
 
         var viewModel = new UserEditViewModel(createBaseViewModel("Редактирование профиля"));
         model.addAttribute("model", viewModel);
@@ -73,15 +79,22 @@ public class UserProfileControllerImpl implements UserProfileController {
     @Override
     @PostMapping("/edit")
     public String edit(Principal principal, @Valid @ModelAttribute("form") EditUserForm form, BindingResult bindingResult, Model model) {
+        LOG.log(Level.INFO, "Edit profile for " + principal.getName());
         if (bindingResult.hasErrors()) {
             var viewModel = new UserEditViewModel(createBaseViewModel("Редактирование профиля"));
             model.addAttribute("model", viewModel);
             model.addAttribute("form", form);
             return "user-edit";
         }
-
-        userService.editUser(new EditUserDTO(form.id(), form.name(), form.email(), form.currentPassword(), form.newPassword(), form.confirmNewPassword()));
-
+        try {
+            userService.editUser(new EditUserDTO(form.id(), form.name(), form.currentPassword(), form.newPassword(), form.confirmNewPassword()));
+        } catch (PasswordsNotMatchException | InvalidUserDataException e) {
+            var viewModel = new UserEditViewModel(createBaseViewModel("Редактирование профиля"));
+            model.addAttribute("model", viewModel);
+            model.addAttribute("form", form);
+            model.addAttribute("error", e.getMessage());
+            return "user-edit";
+        }
         return "redirect:/user/profile";
 
     }
@@ -89,6 +102,7 @@ public class UserProfileControllerImpl implements UserProfileController {
     @Override
     @GetMapping()
     public String getUserProfile(Principal principal, Model model) {
+        LOG.log(Level.INFO, "Show profile for " + principal.getName());
         String email = principal.getName();
         User user = userService.getUser(email);
         sessionRegistrationService.updateStatusToAttended(user.getId());
@@ -120,13 +134,13 @@ public class UserProfileControllerImpl implements UserProfileController {
     @Override
     @PostMapping("/cancel/{sessionId}")
     public String cancelRegistration(Principal principal, @PathVariable("sessionId") String sessionId, Model model) {
+        LOG.log(Level.INFO, "Cancel registration to session for " + principal.getName());
         String email = principal.getName();
         User user = userService.getUser(email);
 
         SessionRegistrationDTO sessionRegistrationDTO = new SessionRegistrationDTO(user.getId(), UUID.fromString(sessionId), BigDecimal.ZERO);
 
         sessionRegistrationService.cancelSessionRegistration(sessionRegistrationDTO);
-
         return "redirect:/user/profile";
     }
 
@@ -134,7 +148,7 @@ public class UserProfileControllerImpl implements UserProfileController {
     @GetMapping("add/{sessionId}")
     public String addReviewForm(Principal principal, @PathVariable("sessionId") String sessionId, Model model) {
         var viewModel = new SessionCreateViewModel(
-                createBaseViewModel("Добавление занятия")
+                createBaseViewModel("Добавление отзыва")
         );
         model.addAttribute("model", viewModel);
         model.addAttribute("form", new AddReviewForm(5, ""));
@@ -144,6 +158,7 @@ public class UserProfileControllerImpl implements UserProfileController {
     @Override
     @PostMapping("add/{sessionId}")
     public String leaveReview(Principal principal, @Valid @ModelAttribute("form") AddReviewForm form, @PathVariable("sessionId") String sessionId, BindingResult bindingResult, Model model) {
+        LOG.log(Level.INFO, "Leave review by " + principal.getName() + " for session " + sessionId);
         String email = principal.getName();
         User user = userService.getUser(email);
         if (bindingResult.hasErrors()) {
