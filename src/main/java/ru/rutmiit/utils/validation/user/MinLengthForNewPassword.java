@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = MinLengthForNewPasswordValidator.class)
 public @interface MinLengthForNewPassword {
-    String message() default "Пароль должен содержать не менее {value} символов";
+    String message() default "Пароль должен содержать определенное количество символов";
 
     int value();
 
