@@ -1,9 +1,10 @@
 package ru.rutmiit.dto.session;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class SessionOutputDTO {
+public class SessionOutputDTO implements Serializable {
 
     private String id;
     private String name;

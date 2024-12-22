@@ -4,7 +4,9 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
-public class InstructorOutputDTO {
+import java.io.Serializable;
+
+public class InstructorOutputDTO implements Serializable {
 
     private String id;
     private String name;

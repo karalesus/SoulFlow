@@ -1,8 +1,9 @@
 package ru.rutmiit.dto.review;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class ReviewOutputDTO {
+public class ReviewOutputDTO implements Serializable {
 
     private String memberId;
     private String sessionId;

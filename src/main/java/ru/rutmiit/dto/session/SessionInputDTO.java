@@ -1,7 +1,6 @@
 package ru.rutmiit.dto.session;
 
 import jakarta.validation.constraints.*;
-import ru.rutmiit.utils.validation.date.PresentOrFuture;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -10,7 +9,6 @@ public class SessionInputDTO {
     private String name;
     private int duration;
     private String description;
-    @PresentOrFuture(message = "Дата и время должны указывать на предстоящую дату!")
     private LocalDateTime dateTime;
     private int maxCapacity;
     private BigDecimal price;
@@ -63,6 +61,7 @@ public class SessionInputDTO {
         this.description = description;
     }
     @NotNull(message = "Дата и время не могут быть пустыми")
+    @FutureOrPresent(message = "Дата и время должны указывать на предстоящую дату!")
     public LocalDateTime getDateTime() {
         return dateTime;
     }

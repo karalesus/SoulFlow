@@ -11,11 +11,13 @@ public class UserDTO {
     @UniqueUserEmail
     private String email;
     private String password;
+    private String confirmPassword;
 
-    public UserDTO(String name, String email, String password) {
+    public UserDTO(String name, String email, String password, String confirmPassword) {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.confirmPassword = confirmPassword;
     }
 
     protected UserDTO() {
@@ -44,13 +46,22 @@ public class UserDTO {
 
     @NotBlank
     @Length(min = 6, message = "Ошибка: пароль должен состоять из минимум 6 символов")
-
     public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @NotBlank(message = "Необходимо подтвердить пароль")
+    @Length(min = 6, message = "Ошибка: пароль должен состоять из минимум 6 символов")
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
     }
 
     @Override
