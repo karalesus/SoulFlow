@@ -12,7 +12,6 @@ public class User extends BaseEntity {
     private String email;
     private String password;
     private List<Role> role;
-//    private int attendedSessions; TODO: не забыть сделать логику для подсчета занятий для каждого участника
 
     public User(String name, String email, String password) {
         this.name = name;

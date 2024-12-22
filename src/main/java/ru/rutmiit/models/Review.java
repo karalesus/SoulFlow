@@ -14,7 +14,7 @@ public class Review {
 
     private MemberSessionKeys id;
 
-    private int rate; // ограничения 1..5
+    private int rate;
     private String comment;
 
     private LocalDateTime date;

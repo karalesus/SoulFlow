@@ -10,7 +10,6 @@ public class Instructor extends BaseEntity {
 
     private String name;
     private String certificate;
-//    private BigDecimal rating; // ограничение 1..5. Вероятно убрать
     private String photoUrl;
     private List<Session> sessionList;
     private boolean isDeleted;
@@ -41,15 +40,6 @@ public class Instructor extends BaseEntity {
     public void setCertificate(String certificate) {
         this.certificate = certificate;
     }
-
-//    @Column(name = "rating", precision = 3, scale = 2, nullable = false)
-//    public BigDecimal getRating() {
-//        return rating;
-//    }
-//
-//    public void setRating(BigDecimal rating) {
-//        this.rating = rating;
-//    }
 
     @Column(name = "photo_url", length = 512)
     public String getPhotoUrl() {
