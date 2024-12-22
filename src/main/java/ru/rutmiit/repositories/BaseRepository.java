@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @NoRepositoryBean
-public abstract class BaseRepository<Entity, KeyType> {
+public abstract class BaseRepository<Entity, ID> {
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -25,7 +25,7 @@ public abstract class BaseRepository<Entity, KeyType> {
         return entity;
     }
 
-    public Optional<Entity> findById(KeyType id) {
+    public Optional<Entity> findById(ID id) {
         return Optional.ofNullable(entityManager.find(entityClass, id));
     }
 

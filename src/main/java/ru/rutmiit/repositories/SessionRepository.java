@@ -1,5 +1,6 @@
 package ru.rutmiit.repositories;
 
+import org.springframework.data.domain.Pageable;
 import ru.rutmiit.models.Session;
 
 import java.time.LocalDateTime;
@@ -7,9 +8,9 @@ import java.util.List;
 
 public interface SessionRepository {
 
-    List<Session> getUpcomingSessions(LocalDateTime now);
+    List<Session> findAllUpcomingSessions(LocalDateTime now);
 
-    List<Session> findAllWithPagination(String searchTerm, int offset, int limit);
+    List<Session> findAllSessionsWithPagination(String searchTerm, Pageable pageable);
 
     long countSessions(String searchTerm);
 }

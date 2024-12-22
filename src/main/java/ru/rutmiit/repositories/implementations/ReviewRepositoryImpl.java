@@ -2,8 +2,8 @@ package ru.rutmiit.repositories.implementations;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import ru.rutmiit.models.Instructor;
 import ru.rutmiit.models.Review;
 import ru.rutmiit.models.compositeKeys.MemberSessionKeys;
 import ru.rutmiit.repositories.BaseRepository;
@@ -41,11 +41,12 @@ public class ReviewRepositoryImpl extends BaseRepository<Review, UUID> implement
     }
 
     @Override
-    public List<Review> findAllWithPagination(int offset, int limit) {
-        var query = entityManager.createQuery(
-                "SELECT r FROM Review r", Review.class);
-        query.setFirstResult(offset);
-        query.setMaxResults(limit);
+    public List<Review> findAllReviewsWithPagination(Pageable pageable) {
+        var query = entityManager.createQuery("SELECT r FROM Review r", Review.class);
+        int pageNumber = pageable.getPageNumber();
+        int pageSize = pageable.getPageSize();
+        query.setFirstResult(pageNumber * pageSize);
+        query.setMaxResults(pageSize);
         return query.getResultList();
     }
 
@@ -55,5 +56,4 @@ public class ReviewRepositoryImpl extends BaseRepository<Review, UUID> implement
                 "SELECT COUNT(r) FROM Review r", Long.class);
         return query.getSingleResult();
     }
-
 }

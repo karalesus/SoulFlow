@@ -2,6 +2,7 @@ package ru.rutmiit.repositories.implementations;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 import ru.rutmiit.models.User;
 import ru.rutmiit.repositories.BaseRepository;
@@ -21,6 +22,7 @@ public class UserRepositoryImpl extends BaseRepository<User, UUID> implements Us
     }
 
     @Override
+    @Transactional
     public Optional<User> findByEmail(String email) {
         return entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class)
                 .setParameter("email", email)

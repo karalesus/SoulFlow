@@ -15,9 +15,9 @@ import java.util.UUID;
 @Repository
 public class SessionRegistrationRepositoryImpl extends BaseRepository<SessionRegistration, MemberSessionKeys> implements SessionRegistrationRepository {
 
-
     @PersistenceContext
     EntityManager entityManager;
+
     public SessionRegistrationRepositoryImpl() {
         super(SessionRegistration.class);
     }
@@ -38,15 +38,6 @@ public class SessionRegistrationRepositoryImpl extends BaseRepository<SessionReg
     }
 
     @Override
-    public boolean existsById(MemberSessionKeys memberSessionKeys) {
-            String query = "SELECT COUNT(sr) FROM SessionRegistration sr WHERE sr.id = :memberSessionKeys";
-            Long count = entityManager.createQuery(query, Long.class)
-                    .setParameter("memberSessionKeys", memberSessionKeys)
-                    .getSingleResult();
-            return count > 0;
-    }
-
-    @Override
     public Optional<String> getStatusBySessionIdAndUserId(UUID sessionId, UUID memberId) {
         List<String> results = entityManager.createQuery(
                         "select sr.status.name from SessionRegistration sr where sr.id.session.id = :sessionId and sr.id.member.id = :memberId",
@@ -55,6 +46,7 @@ public class SessionRegistrationRepositoryImpl extends BaseRepository<SessionReg
                 .setParameter("memberId", memberId)
                 .getResultList();
 
-        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+        if (results.isEmpty()) return Optional.empty();
+        else return Optional.of(results.getFirst());
     }
 }
