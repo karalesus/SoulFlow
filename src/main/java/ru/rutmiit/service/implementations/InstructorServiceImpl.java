@@ -3,6 +3,9 @@ package ru.rutmiit.service.implementations;
 import jakarta.validation.ConstraintViolation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import ru.rutmiit.dto.instructor.InstructorInputDTO;
@@ -10,7 +13,6 @@ import ru.rutmiit.models.Instructor;
 import ru.rutmiit.dto.instructor.InstructorOutputDTO;
 import ru.rutmiit.exceptions.instructor.InstructorNotFoundException;
 import ru.rutmiit.exceptions.instructor.InvalidInstructorDataException;
-import ru.rutmiit.exceptions.user.InvalidUserDataException;
 import ru.rutmiit.exceptions.user.UserNotFoundException;
 import ru.rutmiit.repositories.implementations.InstructorRepositoryImpl;
 import ru.rutmiit.service.InstructorService;
@@ -21,6 +23,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@EnableCaching
 public class InstructorServiceImpl implements InstructorService {
 
     private final ModelMapper modelMapper;
@@ -38,6 +41,7 @@ public class InstructorServiceImpl implements InstructorService {
     }
 
     @Override
+    @CacheEvict(value = {"active_instructors", "instructors"}, allEntries = true)
     public String addInstructor(InstructorInputDTO instructorDTO) {
         validateInstructor(instructorDTO);
         Instructor instructor = convertInstructorDtoToInstructor(instructorDTO);
@@ -51,6 +55,7 @@ public class InstructorServiceImpl implements InstructorService {
     }
 
     @Override
+    @CacheEvict(value = {"active_instructors", "instructors"}, allEntries = true)
     public void editInstructor(String id, InstructorInputDTO instructorDTO) {
         Instructor existingInstructor = instructorRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new IllegalArgumentException("Инструктор с ID " + id + " не найден"));
@@ -65,6 +70,7 @@ public class InstructorServiceImpl implements InstructorService {
     }
 
     @Override
+    @CacheEvict(value = "active_instructors", allEntries = true)
     public void deleteInstructor(String id) {
         Instructor existingInstructor = instructorRepository.findById(UUID.fromString(id)).orElseThrow(() -> new IllegalArgumentException("Инструктор с ID " + id + " не найден"));
         existingInstructor.setDeleted(true);
@@ -72,6 +78,7 @@ public class InstructorServiceImpl implements InstructorService {
     }
 
     @Override
+    @Cacheable("active_instructors")
     public List<InstructorOutputDTO> getActiveInstructors() {
         return instructorRepository.findInstructorsNotDeleted()
                 .stream()
@@ -97,10 +104,11 @@ public class InstructorServiceImpl implements InstructorService {
     }
 
     @Override
+    @Cacheable("instructors")
     public Page<InstructorOutputDTO> getInstructors(String searchTerm, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("name"));
         String term = searchTerm != null ? searchTerm : "";
-        List<Instructor> instructorPage = instructorRepository.findAllWithPagination(term, pageable);
+        List<Instructor> instructorPage = instructorRepository.findAllInstructorsWithPagination(term, pageable);
 
         long totalInstructors = instructorRepository.countInstructors(searchTerm);
         List<InstructorOutputDTO> instructorOutputDTOS = instructorPage.stream()

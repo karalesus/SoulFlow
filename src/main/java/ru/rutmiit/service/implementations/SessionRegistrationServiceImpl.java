@@ -34,7 +34,6 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
     private StatusRepositoryImpl statusRepository;
     private SessionRepositoryImpl sessionRepository;
     private UserRepositoryImpl userRepository;
-    private ReviewRepositoryImpl reviewRepository;
     private DiscountServiceImpl discountService;
 
     @Autowired
@@ -56,11 +55,6 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
     @Autowired
     public void setSessionRepository(SessionRepositoryImpl sessionRepository) {
         this.sessionRepository = sessionRepository;
-    }
-
-    @Autowired
-    public void setReviewRepository(ReviewRepositoryImpl reviewRepository) {
-        this.reviewRepository = reviewRepository;
     }
 
     @Autowired
@@ -134,7 +128,6 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
 
         return sessionRegistration.getId().toString();
     }
-
 
     @Override
     public void cancelSessionRegistration(SessionRegistrationDTO sessionRegistrationDTO) {
@@ -248,11 +241,6 @@ public class SessionRegistrationServiceImpl implements SessionRegistrationServic
 
     public SessionRegistration convertRegistrationDtoToRegistration(SessionRegistrationDTO sessionRegistrationDTO) {
         return modelMapper.map(sessionRegistrationDTO, SessionRegistration.class);
-    }
-
-
-    public SessionRegistrationDTO convertRegistrationToRegistrationDto(SessionRegistration sessionRegistration) {
-        return modelMapper.map(sessionRegistration, SessionRegistrationDTO.class);
     }
 
     public ScheduleSessionsOutputDTO convertRegistrationToRegisteredSessionsDto(SessionRegistration sessionRegistration) {

@@ -12,12 +12,10 @@ public interface SessionRegistrationService {
     String addSessionRegistration(SessionRegistrationDTO sessionRegistrationDTO);
 
     Long getAvailableSpots(String sessionId, int maxCapacity);
-//    List<SessionRegistrationDTO> getAllSessionRegistrations();
     void cancelSessionRegistration(SessionRegistrationDTO sessionRegistrationDTO);
 
     void updateStatusToAttended(UUID memberId);
 
     List<AttendedSessionsDTO> getAttendedSessionsByUserId(UUID userId);
     List<ScheduleSessionsOutputDTO> getRegisteredSessionsByUserId(UUID userId);
-
 }

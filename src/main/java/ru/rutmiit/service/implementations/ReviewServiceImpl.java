@@ -3,6 +3,9 @@ package ru.rutmiit.service.implementations;
 import jakarta.validation.ConstraintViolation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +17,6 @@ import ru.rutmiit.models.*;
 import ru.rutmiit.dto.review.ReviewOutputDTO;
 import ru.rutmiit.exceptions.review.InvalidReviewDataException;
 import ru.rutmiit.exceptions.review.ReviewNotFoundException;
-import ru.rutmiit.exceptions.user.InvalidUserDataException;
 import ru.rutmiit.exceptions.user.UserNotFoundException;
 import ru.rutmiit.models.compositeKeys.MemberSessionKeys;
 import ru.rutmiit.repositories.implementations.*;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 import ru.rutmiit.service.ReviewService;
 
 @Service
+@EnableCaching
 public class ReviewServiceImpl implements ReviewService {
 
     private final ModelMapper modelMapper;
@@ -66,6 +69,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @CacheEvict(value = "reviews", allEntries = true)
     public void addReview(ReviewInputDTO reviewInputDTO) {
         validateReview(reviewInputDTO);
 
@@ -118,10 +122,11 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Cacheable(value = "reviews")
     public Page<ReviewOutputDTO> getAllReviewsWithPagination(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        List<Review> reviewPage = reviewRepository.findAllWithPagination(pageable);
+        List<Review> reviewPage = reviewRepository.findAllReviewsWithPagination(pageable);
 
         long totalReviews = reviewRepository.countReviews();
         List<ReviewOutputDTO> reviewOutputDTOS = reviewPage.stream()
@@ -135,7 +140,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewOutputDTO getReviewById(UUID uuid) {
         if (uuid == null) {
-            throw new InvalidUserDataException("Ошибка ID отзыва");
+            throw new InvalidReviewDataException("Ошибка ID отзыва");
         }
 
         return reviewRepository

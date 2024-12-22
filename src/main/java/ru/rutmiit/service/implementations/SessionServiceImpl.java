@@ -4,6 +4,9 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import ru.rutmiit.dto.session.ScheduleSessionsOutputDTO;
@@ -27,6 +30,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@EnableCaching
 public class SessionServiceImpl implements SessionService {
     private final ModelMapper modelMapper;
     private final ValidationUtil validationUtil;
@@ -35,7 +39,6 @@ public class SessionServiceImpl implements SessionService {
     private DifficultyRepositoryImpl difficultyRepository;
     private TypeRepositoryImpl typeRepository;
     private InstructorRepositoryImpl instructorRepository;
-    private ReviewRepositoryImpl reviewRepository;
     private DiscountServiceImpl discountService;
 
     @Autowired
@@ -74,15 +77,12 @@ public class SessionServiceImpl implements SessionService {
         this.discountService = discountService;
     }
 
-    @Autowired
-    public void setReviewRepository(ReviewRepositoryImpl reviewRepository) {
-        this.reviewRepository = reviewRepository;
-    }
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "sessions", allEntries = true)
     public String addSession(SessionInputDTO sessionInputDTO) {
-        validateSession(sessionInputDTO, "Некорректные данные для добавления занятия");
+        validateSession(sessionInputDTO);
         Session session = convertSessionDtoToSession(sessionInputDTO);
         Difficulty difficulty = difficultyRepository.findByName(sessionInputDTO.getDifficulty())
                 .orElseThrow(() -> new DifficultyNotFoundException("Сложность не найдена"));
@@ -98,23 +98,11 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public List<SessionInputDTO> getAllSessions() {
-        List<SessionInputDTO> sessionsList = sessionRepository.findAll().stream()
-                .map(this::convertSessionToSessionInputDto)
-                .collect(Collectors.toList());
-
-        if (sessionsList.isEmpty()) {
-            throw new SessionNotFoundException("Занятий не найдено");
-        } else {
-            return sessionsList;
-        }
-    }
-
-    @Override
+    @Cacheable("sessions")
     public Page<SessionOutputDTO> getAllSessionsWithPagination(String searchTerm, int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("title"));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("name"));
         String term = searchTerm != null ? searchTerm : "";
-        List<Session> sessionPage = sessionRepository.findAllWithPagination(term, pageable);
+        List<Session> sessionPage = sessionRepository.findAllSessionsWithPagination(term, pageable);
 
         long totalSessions = sessionRepository.countSessions(searchTerm);
         List<SessionOutputDTO> sessionDTOs = sessionPage.stream()
@@ -127,8 +115,9 @@ public class SessionServiceImpl implements SessionService {
 
 
     @Override
+    @CacheEvict(cacheNames = "sessions", allEntries = true)
     public SessionOutputDTO editSession(String id, SessionInputDTO sessionInputDTO) {
-        validateSession(sessionInputDTO, "Некорректные данные для изменения занятия");
+        validateSession(sessionInputDTO);
 
         Session existingSession = sessionRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new RuntimeException("Такого занятия не найдено"));
@@ -168,7 +157,7 @@ public class SessionServiceImpl implements SessionService {
 
     @Override
     public List<ScheduleSessionsOutputDTO> getUpcomingSessions(LocalDateTime now) {
-        List<Session> upcomingSessions = sessionRepository.getUpcomingSessions(now);
+        List<Session> upcomingSessions = sessionRepository.findAllUpcomingSessions(now);
 
         return upcomingSessions.stream().map(session -> {
                     ScheduleSessionsOutputDTO upcomingSessionOutputDTO
@@ -189,7 +178,7 @@ public class SessionServiceImpl implements SessionService {
 
     @Override
     public List<ScheduleSessionsOutputDTO> getDiscountSessions(LocalDateTime now) {
-        List<Session> upcomingSessions = sessionRepository.getUpcomingSessions(now);
+        List<Session> upcomingSessions = sessionRepository.findAllUpcomingSessions(now);
 
         return upcomingSessions.stream()
                 .filter(session -> {
@@ -214,15 +203,14 @@ public class SessionServiceImpl implements SessionService {
         return discountService.calculateDiscountedPrice(session.getPrice(), discount);
     }
 
-    private void validateSession(SessionInputDTO sessionInputDTO, String exceptionMessage) {
+    private void validateSession(SessionInputDTO sessionInputDTO) {
         if (!this.validationUtil.isValid(sessionInputDTO)) {
-
-            this.validationUtil
+            String constraintViolations = this.validationUtil
                     .violations(sessionInputDTO)
                     .stream()
                     .map(ConstraintViolation::getMessage)
-                    .forEach(System.out::println);
-            throw new InvalidSessionDataException(exceptionMessage);
+                    .collect(Collectors.joining(", "));
+            throw new InvalidSessionDataException(constraintViolations);
         }
     }
 

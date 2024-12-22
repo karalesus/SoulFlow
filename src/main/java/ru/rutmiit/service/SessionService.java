@@ -13,8 +13,6 @@ public interface SessionService {
 
     String addSession(SessionInputDTO sessionInputDTO);
 
-    List<SessionInputDTO> getAllSessions();
-
     Page<SessionOutputDTO> getAllSessionsWithPagination(String searchTerm, int page, int size);
 
     SessionOutputDTO editSession(String uuid, SessionInputDTO sessionInputDTO);

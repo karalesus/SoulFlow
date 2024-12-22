@@ -10,7 +10,6 @@ import ru.rutmiit.dto.user.EditUserDTO;
 import ru.rutmiit.exceptions.user.*;
 import ru.rutmiit.models.User;
 import ru.rutmiit.dto.user.UserDTO;
-import ru.rutmiit.exceptions.session.InvalidSessionDataException;
 import ru.rutmiit.models.UserRoles;
 import ru.rutmiit.repositories.implementations.RoleRepositoryImpl;
 import ru.rutmiit.repositories.implementations.UserRepositoryImpl;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private ValidationUtil validationUtil;
+    private final ValidationUtil validationUtil;
     private final ModelMapper modelMapper;
     private RoleRepositoryImpl roleRepository;
     private UserRepositoryImpl userRepository;
@@ -55,15 +54,13 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public String register(UserDTO userDTO) {
         if (!this.validationUtil.isValid(userDTO)) {
-
-            this.validationUtil
+            String constraintViolations = this.validationUtil
                     .violations(userDTO)
                     .stream()
                     .map(ConstraintViolation::getMessage)
-                    .forEach(System.out::println);
-            throw new InvalidSessionDataException("Некорректные данные пользователя при регистрации");
+                    .collect(Collectors.joining(", "));
+            throw new InvalidUserDataException(constraintViolations);
         }
-
 
         boolean existsByEmail = userRepository.existsByEmail(userDTO.getEmail());
 
@@ -74,6 +71,9 @@ public class UserServiceImpl implements UserService {
         var userRole = roleRepository.
                 findRoleByName(UserRoles.MEMBER).orElseThrow();
 
+        if (!userDTO.getPassword().equals(userDTO.getConfirmPassword())) {
+            throw new PasswordsNotMatchException("Пароли не совпадают");
+        }
 
         User user = new User(
                 userDTO.getName(),
@@ -96,9 +96,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public EditUserDTO editUser(EditUserDTO userDTO) {
-        validateUser(userDTO, "Некорректные данные пользователя при редактировании");
+        validateUser(userDTO);
         User user = userRepository.findById(UUID.fromString(userDTO.getId())).orElseThrow(() ->
-                new InvalidEmailException("Пользователь с sessionId " + userDTO.getId() + " не найден.")
+                new InvalidEmailException("Пользователь с id " + userDTO.getId() + " не найден.")
         );
 
         if (!passwordEncoder.matches(userDTO.getCurrentPassword(), user.getPassword())) {
@@ -106,9 +106,8 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setName(userDTO.getName());
-        user.setEmail(userDTO.getEmail());
 
-        if (!userDTO.getNewPassword().isEmpty() ) {
+        if (!userDTO.getNewPassword().isEmpty()) {
             if (!userDTO.getConfirmNewPassword().equals(userDTO.getNewPassword())) {
                 throw new PasswordsNotMatchException("Пароли не совпадают");
             }
@@ -136,20 +135,15 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException(email + " не найден"));
     }
 
-    private void validateUser(EditUserDTO userDTO, String exceptionMessage) {
+    private void validateUser(EditUserDTO userDTO) {
         if (!this.validationUtil.isValid(userDTO)) {
-
-            this.validationUtil
+            String constraintViolations = this.validationUtil
                     .violations(userDTO)
                     .stream()
                     .map(ConstraintViolation::getMessage)
-                    .forEach(System.out::println);
-            throw new InvalidSessionDataException(exceptionMessage);
+                    .collect(Collectors.joining(", "));
+            throw new InvalidUserDataException(constraintViolations);
         }
-    }
-
-    public User convertUserDtoToUser(UserDTO userDTO) {
-        return modelMapper.map(userDTO, User.class);
     }
 
     public UserDTO convertUserToUserDto(User user) {
