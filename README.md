@@ -9,6 +9,8 @@
 3. Откройте браузер по адресу http://localhost:8080 для начала использования приложения.
 
 Демонстрация работы:
+
+
 <img width="468" alt="image" src="https://github.com/user-attachments/assets/d6b1e99c-f75c-4a79-bb9b-b8f6e6b0b58f" />
 
 <img width="417" alt="image" src="https://github.com/user-attachments/assets/cfa8385d-8a06-4cb2-95ca-3a24780e8049" />
