@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head"/>
+<head th:replace="~{fragments/head}"></head>
 <body class="d-flex flex-column h-100">
-<div th:replace="fragments/navbar">Navbar</div>
+<div th:replace="~{fragments/navbar}">Navbar</div>
 <main class="flex-shrink-0">
     <div class="container">
         <div class="row justify-content-center">
@@ -27,22 +27,21 @@
                                 <p class="card-text mb-1 text-start" th:text="${review.comment}"></p>
                                 <p class="card-text text-muted text-start" th:text="${#temporals.format(review.date, 'dd.MM.yyyy')}"></p>
                             </div>
-
-                        <nav th:if="${model.totalPages > 1}" aria-label="Page navigation">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item" th:each="pageNumber : ${#numbers.sequence(1, model.totalPages)}"
-                                    th:classappend="${pageNumber == form.page} ? 'active'">
-                                    <a class="page-link" th:href="@{/reviews(page=${pageNumber}, size=${form.size}, searchTerm=${form.searchTerm})}"
-                                       th:text="${pageNumber}">1</a>
-                                </li>
-                            </ul>
-                        </nav>
                     </div>
+                    <nav th:if="${model.totalPages > 1}" aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:each="pageNumber : ${#numbers.sequence(1, model.totalPages)}"
+                                th:classappend="${pageNumber == form.page} ? 'active'">
+                                <a class="page-link" th:href="@{/reviews(page=${pageNumber}, size=${form.size})}"
+                                   th:text="${pageNumber}">1</a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer"/>
+<footer th:replace="~{fragments/footer}"></footer>
 </body>
 </html>

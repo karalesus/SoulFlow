@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head">
+<head th:replace="~{fragments/head}">
     <title>Расписание занятий</title>
 </head>
 <body class="d-flex flex-column h-100">
-<div th:replace="fragments/navbar">Navbar</div>
+<div th:replace="~{fragments/navbar}">Navbar</div>
 
 <div class="container mt-5">
     <h2 class="text-center mb-4">Ближайшие занятия</h2>
@@ -12,8 +12,9 @@
     <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
         <span th:text="${successMessage}"></span>
     </div>
-
-
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${errorMessage}"></span>
+    </div>
     <form th:action="@{/schedule/upcoming}"
           th:method="get"
           th:object="${form}" class="mb-3">
@@ -25,7 +26,7 @@
 
     <div th:if="${not #lists.isEmpty(model.sessions)}" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div th:each="sessions : ${model.sessions}" class="col">
-            <div class="card">
+            <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title" th:text="${sessions.name}">Название занятия</h5>
                     <p class="card-text"><span th:text="${sessions.description}">Описание занятия</span>
@@ -40,8 +41,8 @@
                     <p class="card-text"><strong>Свободные места:</strong> <span
                             th:text="${sessions.availableSpots}"></span>
                     </p>
-                    <p th:if="${sessions.priceAfterDiscount != 0}" class="card-text">
-                        <strong>Цена до скидки: </strong><del th:text="${#numbers.formatDecimal(sessions.priceBeforeDiscount, 2, 0)}">Цена до скидки</del> рублей</p>
+<!--                    <p th:if="${sessions.priceAfterDiscount != 0}" class="card-text">-->
+<!--                        <strong>Цена до скидки: </strong><del th:text="${#numbers.formatDecimal(sessions.priceBeforeDiscount, 2, 0)}">Цена до скидки</del> рублей</p>-->
                     <p th:if="${sessions.priceAfterDiscount != 0}" class="card-text">
                         <strong>Цена после скидки: </strong><span th:text="${#numbers.formatDecimal(sessions.priceAfterDiscount, 2, 0)}">Цена после скидки</span> рублей</p>
                     <p th:if="${sessions.priceAfterDiscount == 0}" class="card-text">
@@ -63,7 +64,6 @@
         </div>
     </div>
 </div>
-
-<footer th:replace="fragments/footer" class="mt-auto"></footer>
+<footer th:replace="~{fragments/footer}"></footer>
 </body>
 </html>

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head"/>
+<head th:replace="~{fragments/head}"></head>
 <body class="d-flex flex-column h-100">
-<div th:replace="fragments/navbar">Navbar</div>
+<div th:replace="~{fragments/navbar}">Navbar</div>
 
 <div class="container mt-5">
 
@@ -23,7 +23,7 @@
         </div>
         <div th:if="${not #lists.isEmpty(model.sessions)}" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <div th:each="sessions : ${model.sessions}" class="col">
-                <div class="card">
+                <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title" th:text="${sessions.name}">Название</h5>
                     <p class="card-text"><span th:text="${sessions.description}">Описание</span></p>
@@ -55,7 +55,7 @@
         </div>
     </div>
 
-<footer th:replace="fragments/footer"/>
+<footer th:replace="~{fragments/footer}"></footer>
 
 </body>
 </html>

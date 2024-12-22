@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="h-100" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head}"/>
+<head th:replace="~{fragments/head}"></head>
 <body class="d-flex flex-column h-100">
 <div th:replace="~{fragments/navbar}">Navbar</div>
 <main class="flex-shrink-0">
@@ -44,6 +44,22 @@
                             message</small>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label" for="confirmPassword">Подтверждение пароля</label>
+                        <input th:field="*{confirmPassword}"
+                               th:errorclass="is-invalid"
+                               type="password" min="0" class="form-control text-center"
+                               id="confirmPassword" aria-describedby="confirmPassword" name="confirmPassword"/>
+                        <small th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"
+                               class="text-danger">Error
+                            message</small>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger" role="alert">
+                        <p th:text="${error}"></p>
+                    </div>
+
+
 
                     <button type="submit" class="btn btn-secondary">Зарегистрироваться</button>
                 </form>
@@ -51,6 +67,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="~{fragments/footer}"/>
+<footer th:replace="~{fragments/footer}"></footer>
 </body>
 </html>

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head"/>
+<head th:replace="~{fragments/head}"></head>
 <body class="d-flex flex-column h-100">
-<div th:replace="fragments/navbar">Navbar</div>
+<div th:replace="~{fragments/navbar}">Navbar</div>
 <main class="flex-shrink-0">
     <div class="container">
         <div class="row">
@@ -31,18 +31,6 @@
                         <small th:if="${#fields.hasErrors('name')}"
                                th:errors="*{name}"
                                class="text-danger">Ошибка в имени</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="email">Email</label>
-                        <input th:field="*{email}"
-                               th:errorclass="is-invalid"
-                               type="email"
-                               class="form-control text-center"
-                               id="email"/>
-                        <small th:if="${#fields.hasErrors('email')}"
-                               th:errors="*{email}"
-                               class="text-danger">Ошибка в email</small>
                     </div>
 
                     <div class="mb-3">
@@ -81,12 +69,15 @@
                                class="text-danger">Ошибка в подтверждении нового пароля</small>
                     </div>
 
+                    <div th:if="${error}" class = "alert alert-danger" role="alert">
+                        <p th:text="${error}"></p>
+                    </div>
                     <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
                 </form>
             </div>
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer"/>
+<footer th:replace="~{fragments/footer}"></footer>
 </body>
 </html>

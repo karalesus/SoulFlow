@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
-<head th:replace="fragments/head">
-</head>
+<head th:replace="~{fragments/head}"></head>
 <body class="d-flex flex-column h-100">
-<div th:replace="fragments/navbar">Navbar</div>
+<div th:replace="~{fragments/navbar}">Navbar</div>
 
 <main class="flex-shrink-0">
     <div class="container">
@@ -19,13 +17,13 @@
                         <h5><strong>Почта:</strong> <span th:text="${model.userViewModel.email}">Почта</span></h5>
                         <a class="btn btn-dark"
                            th:href="@{/user/profile/edit}">Редактировать</a>
-                        </a>
                     </div>
                 </div>
 
                 <div class="section">
                     <h3>Занятия, на которые вы записаны</h3>
-                    <div th:if="${#lists.isEmpty(model.registeredSessionsViewModel.registeredSessions)}" class="alert alert-info">
+                    <div th:if="${#lists.isEmpty(model.registeredSessionsViewModel.registeredSessions)}"
+                         class="alert alert-info">
                         Вы еще не записались ни на одно занятие...Не хотите познать дзен?
                     </div>
                     <div th:each="sessions : ${model.registeredSessionsViewModel.registeredSessions}" class="card mb-3">
@@ -36,25 +34,31 @@
                             </p>
                             <p><strong>Инструктор:</strong> <span th:text="${sessions.instructorName}">Инструктор</span>
                             </p>
-                            <p><strong>Цена:</strong> <span th:text="${sessions.priceAfterDiscount()}">Цена</span> руб.</p>
-                            <form th:action="@{/user/profile/cancel/{sessionId}(sessionId=${sessions.sessionId})}" method="post">
-                                <button type="submit" class="btn btn-dark" onclick="return confirm('Вы уверены, что хотите записаться на занятие?');">Отменить запись</button>
+                            <p><strong>Цена:</strong> <span th:text="${sessions.priceAfterDiscount()}">Цена</span> руб.
+                            </p>
+                            <form th:action="@{/user/profile/cancel/{sessionId}(sessionId=${sessions.sessionId})}"
+                                  method="post">
+                                <button type="submit" class="btn btn-dark"
+                                        onclick="return confirm('Вы уверены, что хотите записаться на занятие?');">
+                                    Отменить запись
+                                </button>
                             </form>
-
                         </div>
                     </div>
                 </div>
 
                 <div class="section">
                     <h3>Посещенные занятия</h3>
-                    <div th:if="${#lists.isEmpty(model.attendedSessionsViewModel.attendedSessions)}" class="alert alert-info">
+                    <div th:if="${#lists.isEmpty(model.attendedSessionsViewModel.attendedSessions)}"
+                         class="alert alert-info">
                         Вы еще не посетили ни одно занятие! Посетите, и сможете оставить отзыв :)
                     </div>
                     <div th:each="sessions : ${model.attendedSessionsViewModel.attendedSessions}" class="card mb-3">
                         <div class="card-body">
                             <h5><span th:text="${sessions.name}">Название</span></h5>
                             <p><strong>Дата и время:</strong> <span
-                                    th:text="${#temporals.format(sessions.dateTime, 'dd MMMM yyyy, HH:mm', new java.util.Locale('ru', 'RU'))}">Дата и время</span></p>
+                                    th:text="${#temporals.format(sessions.dateTime, 'dd MMMM yyyy, HH:mm', new java.util.Locale('ru', 'RU'))}">Дата и время</span>
+                            </p>
                             <p><strong>Инструктор:</strong> <span
                                     th:text="${sessions.instructorName}">Инструктор</span></p>
                             <p><strong>Цена:</strong> <span th:text="${sessions.price}">Цена</span> руб.</p>
@@ -62,17 +66,17 @@
                                th:if="${!sessions.hasReview}"
                                th:href="@{/user/profile/add/{sessionId}(sessionId=${sessions.sessionId})}">Оставить
                                 отзыв</a>
-                            <p th:if="${sessions.hasReview}" class="text-success">Вы уже оставили отзыв на это занятие</p>
+                            <p th:if="${sessions.hasReview}" class="text-success">Вы уже оставили отзыв на это
+                                занятие</p>
                         </div>
                     </div>
                 </div>
-
+            </div>
         </div>
-    </div>
     </div>
     </div>
 </main>
 
-<footer th:replace="fragments/footer"/>
+<footer th:replace="~{fragments/footer}"></footer>
 </body>
 </html>

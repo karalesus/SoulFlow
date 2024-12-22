@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru" class="h-100" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head">
+<head th:replace="~{fragments/head}"></head>
 <body class="d-flex flex-column h-100">
-<div th:replace="fragments/navbar">Navbar</div>
+<div th:replace="~{fragments/navbar}">Navbar</div>
 <main class="flex-shrink-0">
     <div class="container">
         <div class="row">
@@ -32,23 +32,20 @@
                 <div th:if="${not #lists.isEmpty(model.sessions)}">
                     <div th:each="sessions : ${model.sessions}"
                          class="d-flex flex-column bg-text mb-3 p-3 border rounded">
-                        <h2 th:text="'Название: ' + ${sessions.name}">Название</h2>
-                        <h4 th:text="'Длительность: ' + ${sessions.duration} + ' минут'" >Длительность</h4>
-                        <h4 th:text="'Описание: ' + ${sessions.description}">Описание</h4>
-                        <h4 th:text="'Дата и время: ' + ${sessions.dateTime}">Дата и время</h4>
-                        <h4 th:text="'Вместимость: ' + ${sessions.maxCapacity}">Вместимость</h4>
-                        <h4 th:text="'Цена: ' + ${sessions.price}">Цена</h4>
-                        <h4 th:text="'Сложность: ' + ${sessions.difficultyName}">Сложность</h4>
-                        <h4 th:text="'Тип: ' + ${sessions.typeName}">Тип</h4>
-                        <h4 th:text="'Инструктор: ' + ${sessions.instructor}">Инструктор</h4>
+                        <h5 th:text="'Название: ' + ${sessions.name}">Название</h5>
+                        <h5 th:text="'Длительность: ' + ${sessions.duration} + ' минут'" >Длительность</h5>
+                        <h5 th:text="'Описание: ' + ${sessions.description}">Описание</h5>
+                        <h5 th:text="'Дата и время: ' + ${sessions.dateTime}">Дата и время</h5>
+                        <h5 th:text="'Вместимость: ' + ${sessions.maxCapacity}">Вместимость</h5>
+                        <h5 th:text="'Цена: ' + ${sessions.price}">Цена</h5>
+                        <h5 th:text="'Сложность: ' + ${sessions.difficultyName}">Сложность</h5>
+                        <h5 th:text="'Тип: ' + ${sessions.typeName}">Тип</h5>
+                        <h5 th:text="'Инструктор: ' + ${sessions.instructor}">Инструктор</h5>
                         <div class="mt-2">
-                            <a class="btn btn-secondary"
+                            <a class="btn btn-secondary small"
                                th:href="@{/sessions/{id}(id=${sessions.id})}">Подробнее</a>
-                            <a class="btn btn-primary"
+                            <a class="btn btn-primary small"
                                th:href="@{/sessions/{id}/edit(id=${sessions.id})}">Редактировать</a>
-<!--                            <a class="btn btn-danger"-->
-<!--                               th:href="@{/sessions/{sessionId}/delete(sessionId=${sessions.sessionId})}"-->
-<!--                               onclick="return confirm('Вы уверены, что хотите удалить этого инструктора?');">Удалить</a>-->
                         </div>
                     </div>
 
@@ -72,6 +69,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer"/>
+<footer th:replace="~{fragments/footer}"></footer>
 </body>
 </html>
